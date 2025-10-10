@@ -16,10 +16,11 @@ h1 {
 */
 
 .name {
-  color: purple;
+  color: #284AA6;
   text-align: center;
-  font-size: 5em;
+  font-size: 4em;
   font-family: Gill Sans, sans-serif;
+  text-decoration: underline;
 }
 
 
@@ -32,4 +33,5 @@ h1 {
   padding: 10% 10% 10% 10%;
   border-style: solid;
   border-radius: 10px;
+  border-colour: #D1BD3F;
 }
