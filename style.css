@@ -17,6 +17,7 @@ h1 {
 
 .name {
   color: purple;
-  text-align: center:
-  
+  text-align: center;
+  font-size: 5em;
+  font-family: Gill Sans, sans-serif;
 }
