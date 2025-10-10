@@ -1,3 +1,4 @@
+/*
 body {
 
   background-color: beige;
@@ -11,4 +12,9 @@ h1 {
   color: #54727A;
   font-size: 5rem;
   text-decoration: underline;
+}
+*/
+
+.name {
+  color: purple;
 }
