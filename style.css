@@ -21,3 +21,15 @@ h1 {
   font-size: 5em;
   font-family: Gill Sans, sans-serif;
 }
+
+
+.questions {
+  color: black;
+  text-align: center;
+  font-size: 2em;
+  font-family: Gill Sans, sans-serif;
+  margin: 20px 20px 20px 20px;
+  padding: 10% 10% 10% 10%;
+  border-style: solid;
+  border-radius: 10px;
+}
