@@ -31,10 +31,10 @@ h1 {
   text-align: center;
   font-size: 1em;
   font-family: Gill Sans, sans-serif;
-  margin: 10px 10px 10px 10px;
-  padding: 5% 5% 5% 5%;
+  margin: 5px 5px 5px 5px;
+  padding: 2% 2% 2% 2%;
   border-style: solid;
-  border-radius: 50px;
+  border-radius: 150px;
   border-colour: #D1BD3F;
   border-width: 10px;
 }
