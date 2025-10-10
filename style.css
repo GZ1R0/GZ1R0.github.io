@@ -21,6 +21,8 @@ h1 {
   font-size: 4em;
   font-family: Gill Sans, sans-serif;
   text-decoration: underline;
+  margin: 10% 10% 10% 10%;
+  padding: 1cm 1cm 1cm 1cm;
 }
 
 
@@ -35,4 +37,9 @@ h1 {
   border-radius: 10px;
   border-colour: #D1BD3F;
   border-width: 10px;
+}
+
+
+body {
+  background-color: beige;
 }
