@@ -12,6 +12,7 @@ h1{
   margin: auto;
   padding: 30px;
   border-radius: 35px;
+  border-style: solid;
 }
 
 #header p, h2{
