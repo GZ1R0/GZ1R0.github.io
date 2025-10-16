@@ -4,7 +4,7 @@ h1{
 }
 
 #header{
-  background-colour: #7b9e89;
+  background-color: #7b9e89;
   color: #020122;
   width: 80%;
   height: 30px;
@@ -26,11 +26,13 @@ h1{
   background-color: #fc9e4f;
   color: #020122;
   border-radius: 70px;
+  border-style: solid;
 }
 
 #parent p, h3{
   padding: 3%;
   font-size: 1.25rem;
+  text-align: center;
 }
 
 #child{
@@ -38,6 +40,11 @@ h1{
   height: 350px;
   background-color: #f4442e;
   color: #020122;
+  text-align: center;
+  margin: auto;
+  padding: 30px;
+  border-radius: 35px;
+  border-style: solid;
 }
 
 #child p, h3{
