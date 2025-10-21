@@ -1,3 +1,4 @@
+/*
 body {
 
   background-color: beige;
@@ -11,4 +12,35 @@ h1 {
   color: #54727A;
   font-size: 5rem;
   text-decoration: underline;
+}
+*/
+
+.name {
+  color: #284AA6;
+  text-align: center;
+  font-size: 2em;
+  font-family: Gill Sans, sans-serif;
+  text-decoration: underline;
+  margin: 10% 10% 10% 10%;
+  padding: 1cm 1cm 1cm 1cm;
+}
+
+
+.question {
+  color: #7C19C2;
+  text-align: center;
+  font-size: 1em;
+  font-family: Gill Sans, sans-serif;
+  margin: 50px 5px 5px 5px;
+  padding: 2% 2% 2% 2%;
+  border-style: solid;
+  border-radius: 150px;
+  border-colour: #D1BD3F;
+  border-width: 10px;
+  list-style-position: inside;
+}
+
+
+body {
+  background-color: #F0D9B6;
 }
