@@ -1,46 +1,47 @@
 body{
-background-color: #012B0A
+    background-color: #012B0A /* added ; */
 }
 
 #corner-head{ 
-border-style: solid;
-border-color: #124D1F; 
-color: FFFFFF; 
-text-decoration: underline;
-position: relative;
-right: 0%;
-top: 5%;
-margin: 3% 0% 7% 70%;
-padding: 2% 5%;
-border-radius: 5px;
-background-color: #124D1F;
+    border-style: solid;
+    border-color: #124D1F; 
+    color: #FFFFFF; /* added hhashtag */
+    text-decoration: underline; /* added :*/
+    position: relative;
+    right: 0%;
+    top: 5%;
+    margin: 3% 0% 5% 70%;
+    padding: 2% 5%;
+    border-radius: 5px;
+    background-color: #124D1F;
+    text-align: center;
 }
 
 #c-text{
-background-color: #124D1F;
-padding: 5%; 
-margin: auto; 
-text-align: center;
-color: #FFFFFF; 
-width: 500px;
-border-radius: 8px;
-margin-bottom: 2%;
+    background-color: #124D1F;
+    padding: 5%; 
+    margin: auto; 
+    text-align: center;
+    color: #FFFFFF; 
+    width: 500px;
+    border-radius: 8px;
+    margin-bottom: 2%;
 }
 
 #color{
-background-color: #8A4304;
-width: 200;
-height: 200;
-border-radius: 50%;
-margin: 0 auto;
+    background-color: #8A4304;
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    margin: 0 auto;
 }
 
 #text {
-background-color: 124D1F;
-padding: 5%;
-margin: auto;
-text-align: center;
-color: brown;
-width: 500px;
-border-radius: 8px;
+    background-color: #124D1F;
+    padding: 5%;
+    margin: auto;
+    text-align: center;
+    color: #FFFFFF;
+    width: 500px;
+    border-radius: 8px;
 }
