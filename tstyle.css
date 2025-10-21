@@ -1,5 +1,7 @@
-body{background-color: #012B0A
+body{
+background-color: #012B0A
 }
+
 #corner-head{ 
 border-style: solid;
 border-color: #124D1F; 
@@ -35,8 +37,8 @@ margin: 0 auto;
 
 #text {
 background-color: 124D1F;
-padding: 0%;
-margin: 5% auto;
+padding: 5%;
+margin: auto;
 text-align: center;
 color: brown;
 width: 500px;
