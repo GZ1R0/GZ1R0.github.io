@@ -1,6 +1,6 @@
 body {
     font-family: Segoe UI, sans-serif;
-    /* I removed exclamation marks from the font-family name because they cause the font to be misinterpreted as regular text, preventing the correct font from being applied. */
+    /* I removed quotation marks from the font-family name because they cause the font to be misinterpreted as regular text, preventing the correct font from being applied. */
 
     background-color: #f5f9fc;
     color: #333;
