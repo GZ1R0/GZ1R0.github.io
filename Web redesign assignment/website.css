@@ -1,0 +1,109 @@
+body {
+    margin: 0;
+    background-color: #f4f4f4;
+}
+
+@font-face {
+    font-family: "Neue";
+    src: url(font/NeueEinstellung-Light.ttf);
+}
+
+
+#header {
+    position: fixed;
+    width: 100%;
+    height: 3.488rem;
+    color: #1c2617;
+    background-color: #d3f0c1;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    top: 0;
+    font-family: 'Neue';
+    font-size: .8rem;
+}
+
+
+#navbar {
+    margin-top: 3.125rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: 3.4rem;
+    padding-left: 3.063rem;
+    background-color: #ffffff;
+    align-items: center;
+    height: 6.65rem;
+    font-family: 'Neue';
+    position: relative;
+}
+
+#logo {
+    height: 80px;
+}
+
+#navbar h3 {
+    font-size: 1.5rem;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+#icons {
+    width: 9.569rem;
+    height: 3.5rem;
+    margin-bottom: .5rem;
+}
+
+
+
+
+
+#matchabg {
+    aspect-ratio: 16/9;
+    width: 100%;
+    height: 29.7rem;
+    background-image: url(images/matcha.png);
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center 30%;
+    position: relative;
+}
+
+
+
+.container {
+    position: relative; /* Essential: Positions the overlay relative to this container */
+    /* Add desired width/height or other styling for the container */
+    width: 100%;
+    height: 300px;
+}
+
+.overlay {
+    position: absolute; /* Positions the overlay on top of the container content */
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Black color with 50% opacity */
+    z-index: 1; /* Ensures the overlay is above other content in the container */
+}
+
+
+.overlay h1 {
+    color: white;
+    font-size: 4rem;
+    padding: 1rem;
+    position: relative;
+    top: 15%;
+    text-align:center;
+    font-family: 'Neue';
+}
+
+.overlay h2 {
+    color: white;
+    font-size: 1.5rem;
+    padding: 1rem;
+    position: relative;
+    top: 10%;
+    text-align:center;
+    font-family: 'Neue';
+}
