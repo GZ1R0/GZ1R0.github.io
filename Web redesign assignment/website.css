@@ -24,6 +24,7 @@ body {
 }
 
 
+
 #navbar {
     margin-top: 3.125rem;
     display: flex;
@@ -37,11 +38,48 @@ body {
     position: relative;
 }
 
+#header2 {
+    position: sticky;
+    width: 100%;
+    height: 3.488rem;
+    color: #1c2617;
+    background-color: #d3f0c1;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    top: 0;
+    font-family: 'Neue';
+    font-size: .8rem;
+    z-index: 3;
+}
+
+#navbar2 {
+    position: fixed;
+    width: 100%;
+    margin-top: 3.125rem;
+    display: flex;
+    justify-content: flex-start;
+    gap: 3.4rem;
+    padding-left: 3.063rem;
+    background-color: #ffffff;
+    align-items: center;
+    height: 6.65rem;
+    font-family: 'Neue';
+    margin-top:0;
+    z-index: 2;
+}
+
 #logo {
     height: 80px;
 }
 
 #navbar h3 {
+    font-size: 1.5rem;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+#navbar2 h3 {
     font-size: 1.5rem;
     font-weight: normal;
     cursor: pointer;
@@ -55,12 +93,10 @@ body {
 
 
 
-
-
 #matchabg {
     aspect-ratio: 16/9;
     width: 100%;
-    height: 29.7rem;
+    height: 29.6rem;
     background-image: url(images/matcha.png);
     background-repeat: no-repeat;
     background-size: cover;
@@ -106,4 +142,69 @@ body {
     top: 10%;
     text-align:center;
     font-family: 'Neue';
+}
+
+#navbar h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+#navbar2 h3 a {
+    color: inherit;
+    text-decoration: none;
+}
+
+
+
+#navbar h3 a.active {
+    color: inherit;
+    text-decoration: underline;
+}
+
+#navbar2 h3 a.active {
+    color: inherit;
+    text-decoration: underline;
+}
+
+
+
+.box {
+    width: 21.719rem;
+    height: 5.1rem;
+    color: white;
+    border-style: solid;
+    border-width: 0.1rem;
+    border-color: #d9d9d9;
+    background-color: #ffffff;
+    position: relative;
+}
+
+.my-hr {
+  border: none; /* Remove default border */
+  height: 0.1rem; /* Set height for the line */
+  background-color: #d9d9d9; /* Set color */
+  position:fixed;
+  width: 100%;
+  margin-top: 0;
+  margin-bottom: 0;
+  z-index: 2;
+}
+
+.lbox {
+    width: 21.719rem;
+    height: 10.2rem;
+    color: white;
+    border-style: solid;
+    border-width: 0.1rem;
+    border-color: #d9d9d9;
+    background-color: #ffffff;
+    position: relative;
+}
+
+#sidebar {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    margin-top: 6.65rem;
+    z-index: 1;
 }
