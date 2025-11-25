@@ -96,7 +96,7 @@ body {
 #matchabg {
     aspect-ratio: 16/9;
     width: 100%;
-    height: 29.6rem;
+    height: 29.7rem;
     background-image: url(images/matcha.png);
     background-repeat: no-repeat;
     background-size: cover;
@@ -112,6 +112,9 @@ body {
     width: 100%;
     height: 300px;
 }
+
+
+
 
 .overlay {
     position: absolute; /* Positions the overlay on top of the container content */
@@ -207,4 +210,30 @@ body {
     position: relative;
     margin-top: 6.65rem;
     z-index: 1;
+    top:0;
+}
+
+#sidebar h2 {
+    font-family: 'Neue';
+    font-size: 1.5rem;
+    color: #1c2617;
+    margin-left: 50rem;
+    margin-top: 50rem;
+}
+
+
+#lbox h2 {
+    font-family: 'Neue';
+    font-size: 1.5rem;
+    color: #1c2617;
+    margin-left: 100rem;
+}
+
+
+.container2 h2 {
+    font-family: 'Neue';
+    font-size: 1.5rem;
+    color: #1c2617;
+    margin-left: 100rem;
+    position: relative;
 }
