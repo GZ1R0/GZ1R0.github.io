@@ -112,6 +112,9 @@ body {
     height: 300px; /* Container height */
 }
 
+
+
+
 .overlay {
     position: absolute; /* Sits on top of background */
     top: 0; /* Starts at top */
