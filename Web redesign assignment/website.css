@@ -282,7 +282,7 @@ body {
     font-family: 'Neue'; /* Custom text style */
     font-size: 1.2em; /* Slightly bigger text */
     color: #1c2617; /* Dark green color */
-    margin-left: 55em; /* Pushes this text to the right */
+    margin-left: 55%; /* Pushes this text to the right */
 }
 
 .filter-controls h2 {
