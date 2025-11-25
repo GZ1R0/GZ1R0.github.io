@@ -1,152 +1,189 @@
 body {
-    margin: 0;
-    background-color: #f4f4f4;
+    margin: 0; /* Removes default browser margin */
+    background-color: #ffffff; /* Sets white background color */
 }
 
 @font-face {
-    font-family: "Neue";
-    src: url(font/NeueEinstellung-Light.ttf);
+    font-family: "Neue"; /* Names custom font so I can use it */
+    src: url(font/NeueEinstellung-Light.ttf); /* Loads the font file */
 }
-
 
 #header {
-    position: fixed;
-    width: 100%;
-    height: 3.488rem;
-    color: #1c2617;
-    background-color: #d3f0c1;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    top: 0;
-    font-family: 'Neue';
-    font-size: .8rem;
+    position: fixed; /* Keeps the header stuck to the top */
+    width: 100%; /* Makes header stretch full width */
+    height: 3.488em; /* Controls header height */
+    color: #1c2617; /* Text color */
+    background-color: #d3f0c1; /* Light green background */
+    display: flex; /* Uses flexbox for layout */
+    justify-content: space-around; /* Spreads items evenly */
+    align-items: center; /* Centers items vertically */
+    top: 0; /* Positions header at the top */
+    font-family: 'Neue'; /* Applies custom font */
+    font-size: .8em; /* Slightly smaller text */
 }
 
-
-
 #navbar {
-    margin-top: 3.125rem;
-    display: flex;
-    justify-content: flex-start;
-    gap: 3.4rem;
-    padding-left: 3.063rem;
-    background-color: #ffffff;
-    align-items: center;
-    height: 6.65rem;
-    font-family: 'Neue';
-    position: relative;
+    margin-top: 3.125em; /* Pushes navbar below fixed header */
+    display: flex; /* Lays out items in a row */
+    justify-content: center; /* Centers items horizontally */
+    gap: 3.4em; /* Space between each link */
+    padding-left: 3.063em; /* Slight left padding */
+    background-color: #ffffff; /* White background */
+    align-items: center; /* Vertically centers content */
+    height: 6.65em; /* Navbar height */
+    font-family: 'Neue'; /* Custom font */
+    position: relative; /* Allows positioned elements inside */
 }
 
 #header2 {
-    position: sticky;
-    width: 100%;
-    height: 3.488rem;
-    color: #1c2617;
-    background-color: #d3f0c1;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    top: 0;
-    font-family: 'Neue';
-    font-size: .8rem;
-    z-index: 3;
+    position: fixed; /* Sticky second header version */
+    width: 100%; /* Full width */
+    height: 3.488em; /* Height of header */
+    color: #1c2617; /* Text color */
+    background-color: #d3f0c1; /* Green background */
+    display: flex; /* Flexbox layout */
+    justify-content: space-around; /* Even spacing */
+    align-items: center; /* Vertically centers text */
+    top: 0; /* Sticks to top */
+    font-family: 'Neue'; /* Custom font */
+    font-size: .8em; /* Smaller text */
 }
 
 #navbar2 {
-    position: fixed;
-    width: 100%;
-    margin-top: 3.125rem;
-    display: flex;
-    justify-content: flex-start;
-    gap: 3.4rem;
-    padding-left: 3.063rem;
-    background-color: #ffffff;
-    align-items: center;
-    height: 6.65rem;
-    font-family: 'Neue';
-    margin-top:0;
-    z-index: 2;
+    margin-top: 3.125em; /* Pushes navbar under fixed bar */
+    display: flex; /* Horizontal layout */
+    justify-content: center; /* Centers links */
+    gap: 3.4em; /* Space between items */
+    padding-left: 3.063em; /* Left padding */
+    background-color: #ffffff; /* White background */
+    align-items: center; /* Vertically centers items */
+    height: 6.65em; /* Height of bar */
+    font-family: 'Neue'; /* Font style */
+    position: relative; /* For positioned children */
 }
 
 #logo {
-    height: 80px;
+    height: 80px; /* Sets logo size */
 }
 
 #navbar h3 {
-    font-size: 1.5rem;
-    font-weight: normal;
-    cursor: pointer;
+    font-size: 1.5em; /* Bigger link text */
+    font-weight: normal; /* Removes bold */
+    cursor: pointer; /* Makes text clickable */
 }
 
 #navbar2 h3 {
-    font-size: 1.5rem;
+    font-size: 1.5em; /* Same as above */
     font-weight: normal;
     cursor: pointer;
 }
 
 #icons {
-    width: 9.569rem;
-    height: 3.5rem;
-    margin-bottom: .5rem;
+    width: 9.569em; /* Icon bar width */
+    height: 3.5em; /* Icon bar height */
+    margin-bottom: .5em; /* Small spacing below */
 }
-
-
 
 #matchabg {
-    aspect-ratio: 16/9;
-    width: 100%;
-    height: 29.6rem;
-    background-image: url(images/matcha.png);
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-position: center 30%;
-    position: relative;
+    aspect-ratio: 16/9; /* Keeps background area proportional */
+    width: 100%; /* Full width */
+    height: fit-content; /* Adjusts height to content */
+    background-image: url(images/matcha.png); /* Background photo */
+    background-repeat: no-repeat; /* Prevents repeating image */
+    background-size: cover; /* Makes image fill the space */
+    background-position: center 30%; /* Moves image slightly up */
+    position: relative; /* For overlay positioning */
 }
 
-
+#shoppingbg {
+    aspect-ratio: 16/9; /* Keeps proportions */
+    width: 100%; /* Full width */
+    height: 29.7em; /* Fixed height */
+    background-image: url(images/shoppingimg.png); /* Background photo */
+    background-repeat: no-repeat; /* No repeats */
+    background-size: cover; /* Cover entire area */
+    background-position: center 35%; /* Adjust image position */
+    position: relative; /* For overlay */
+}
 
 .container {
-    position: relative; /* Essential: Positions the overlay relative to this container */
-    /* Add desired width/height or other styling for the container */
-    width: 100%;
-    height: 300px;
+    position: relative; /* Makes overlays position inside */
+    width: 100%; /* Full width */
+    height: 300px; /* Container height */
 }
 
 .overlay {
-    position: absolute; /* Positions the overlay on top of the container content */
-    top: 0;
-    right: 0;
-    width: 50%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5); /* Black color with 50% opacity */
-    z-index: 1; /* Ensures the overlay is above other content in the container */
+    position: absolute; /* Sits on top of background */
+    top: 0; /* Starts at top */
+    right: 0; /* Sticks to the right */
+    width: 50%; /* Half-width dark overlay */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Transparent black layer */
+    z-index: 1; /* Ensures overlay is on top */
 }
 
+.overlay2 {
+    position: absolute; /* Full overlay */
+    top: 0;
+    right: 0;
+    width: 100%; /* Covers whole background */
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Dark filter */
+    z-index: 1; /* Above image */
+}
+
+.overlay3 {
+    position: absolute; /* Overlay for about page */
+    top: 0;
+    right: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    background-color: rgba(0, 0, 0, 0.5); /* Transparent black */
+    z-index: 1; /* On top */
+}
+
+.overlay3 h1 {
+    color: white; /* White text */
+    font-size: 7em; /* Large title */
+    position: relative; /* Allows vertical shift */
+    top: 17%; /* Moves title down */
+    text-align:center; /* Centers title */
+    font-family: 'Neue'; /* Custom font */
+}
+
+.overlay2 h1 {
+    color: white; /* White text */
+    font-size: 4em; /* Large text */
+    padding: 1em; /* Space around text */
+    position: relative; /* Allows movement */
+    top: 20%; /* Moves downward */
+    text-align:center; /* Centers text */
+    font-family: 'Neue';
+}
 
 .overlay h1 {
-    color: white;
-    font-size: 4rem;
-    padding: 1rem;
-    position: relative;
-    top: 15%;
-    text-align:center;
+    color: white; /* White text */
+    font-size: 4em; /* Big title */
+    padding: 1em; /* Padding around */
+    position: relative; /* Moveable */
+    top: 15%; /* Moves down slightly */
+    text-align:center; /* Centers text */
     font-family: 'Neue';
 }
 
 .overlay h2 {
-    color: white;
-    font-size: 1.5rem;
-    padding: 1rem;
-    position: relative;
-    top: 10%;
-    text-align:center;
+    color: white; /* Subtitle in white */
+    font-size: 1.5em; /* Medium text */
+    padding: 1em; /* Spacing */
+    position: relative; /* Allows small adjustments */
+    top: 10%; /* Pushes down */
+    text-align:center; /* Centers subtitle */
     font-family: 'Neue';
 }
 
 #navbar h3 a {
-    color: inherit;
-    text-decoration: none;
+    color: inherit; /* Uses navbar text color */
+    text-decoration: none; /* Removes underline */
 }
 
 #navbar2 h3 a {
@@ -154,11 +191,9 @@ body {
     text-decoration: none;
 }
 
-
-
 #navbar h3 a.active {
-    color: inherit;
-    text-decoration: underline;
+    color: inherit; /* Same color */
+    text-decoration: underline; /* Shows current page */
 }
 
 #navbar2 h3 a.active {
@@ -166,45 +201,122 @@ body {
     text-decoration: underline;
 }
 
-
-
 .box {
-    width: 21.719rem;
-    height: 5.1rem;
-    color: white;
-    border-style: solid;
-    border-width: 0.1rem;
-    border-color: #d9d9d9;
-    background-color: #ffffff;
-    position: relative;
+    width: 21.719em; /* Box width */
+    height: 5.1em; /* Box height */
+    color: white; /* Text color */
+    border-style: solid; /* Border outline */
+    border-width: 0.1em; /* Thin border */
+    border-color: #d9d9d9; /* Light grey border */
+    background-color: #ffffff; /* White fill */
+    position: relative; /* Allows inner positioning */
 }
 
 .my-hr {
-  border: none; /* Remove default border */
-  height: 0.1rem; /* Set height for the line */
-  background-color: #d9d9d9; /* Set color */
-  position:fixed;
-  width: 100%;
-  margin-top: 0;
+  border: none; /* Removes default line style */
+  height: 0.1em; /* Thin custom line */
+  background-color: #d9d9d9; /* Grey separator */
+  position: absolute; /* Positioned independently */
+  width: 100%; /* Full width line */
+  margin-top: 0; /* Removes spacing */
   margin-bottom: 0;
-  z-index: 2;
+  z-index: 2; /* Places above content */
+}
+
+.my-hr2 {
+  border: none; /* Removes default HR border */
+  height: 0.1em; /* Thin separator */
+  background-color: #d9d9d9; /* Grey color */
+  width: 50%; /* Shorter line */
+  margin-top: 0;
+  align-items: center; /* Intended vertical centering */
 }
 
 .lbox {
-    width: 21.719rem;
-    height: 10.2rem;
-    color: white;
-    border-style: solid;
-    border-width: 0.1rem;
-    border-color: #d9d9d9;
-    background-color: #ffffff;
-    position: relative;
+    width: 21.719em; /* Bigger box width */
+    height: 10.2em; /* Taller box */
+    color: white; /* Text inside */
+    border-style: solid; /* Border style */
+    border-width: 0.1em; /* Border thickness */
+    border-color: #d9d9d9; /* Grey border */
+    background-color: #ffffff; /* White background */
+    position: relative; /* Allows child elements to move */
 }
 
-#sidebar {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    margin-top: 6.65rem;
-    z-index: 1;
+#shoppingdescription {
+    font-family: 'Neue'; /* Custom font */
+    font-size: 1.3em; /* Medium text */
+    color: #1c2617; /* Dark green text */
+    text-align: center; /* Centers paragraph */
+    padding: .5em .5em; /* Space around text */
+}
+
+.btn-filter {
+    background-color: #374640; /* Button color */
+    border-style: solid; /* Button border */
+    border-radius: 15px; /* Rounded edges */
+    border-color: #374640; /* Same color border */
+    padding: 0.7em 1.5em; /* Button padding */
+    font-family: 'Neue'; /* Custom font */
+    font-size: 1em; /* Regular size text */
+    cursor: pointer; /* Shows clickable cursor */
+    margin-left: 10em; /* Horizontal spacing */
+    margin-top: 5em; /* Pushes button down */
+    margin-bottom: 5em; /* Space below */
+}
+
+#filtersection {
+    width: 100%; /* Full width section */
+}
+
+.filter-controls {
+    display: flex; /* Aligns items in a row */
+    align-items: center; /* Centers vertically */
+    gap: 1.5em; /* Space between items */
+}
+
+.firstfilter {
+    font-family: 'Neue'; /* Custom text style */
+    font-size: 1.2em; /* Slightly bigger text */
+    color: #1c2617; /* Dark green color */
+    margin-left: 55em; /* Pushes this text to the right */
+}
+
+.filter-controls h2 {
+    font-family: 'Neue'; /* Custom font */
+    font-size: 1.2em; /* Text size */
+    color: #1c2617; /* Text color */
+}
+
+#aboutusbg {
+    aspect-ratio: 16/9; /* Keeps image proportional */
+    width: 100%; /* Full width */
+    height: 29.7em; /* Fixed height */
+    background-image: url(images/teashop.png); /* About page image */
+    background-repeat: no-repeat; /* No repeated image */
+    background-size: cover; /* Cover whole area */
+    background-position: center 45%; /* Moves image slightly */
+    position: relative; /* Allows overlay */
+}
+
+#aboutusdescription {
+    font-family: 'Neue'; /* Custom font */
+    font-size: 4em; /* Large section heading */
+    color: #1c2617; /* Dark green color */
+    text-align: center; /* Centers text */
+}
+
+#aboutusdescription h2{
+    font-family: 'Comic Neue', cursive; /* Comic-style font */
+    font-size: 1.5em; /* Medium text */
+    color: #1c2617; /* Text color */
+    text-align: center; /* Centers heading */
+}
+
+#aboutusdescription h3 {
+    font-family: 'Neue'; /* Custom font */
+    font-size: .5em; /* Smaller descriptive text */
+    color: #1c2617; /* Text color */
+    text-align: center; /* Centered text */
+    padding-bottom: 5em; /* Space under text */
 }
