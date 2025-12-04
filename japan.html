@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Travel Guide - Interactive Map & Itinerary Planner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Playfair+Display:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #bc002d;
+            --primary-light: #ff4d6d;
+            --secondary: #005bac;
+            --secondary-light: #4d8fff;
+            --dark: #1a1a1a;
+            --light: #f8f8f8;
+            --gray: #6c757d;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            overflow-x: hidden;
+            height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: white;
+            padding: 0.8rem 1.5rem;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.6rem;
+            color: var(--primary);
+        }
+
+        .logo span {
+            color: var(--secondary);
+        }
+
+        .logo-icon {
+            color: var(--primary);
+            font-size: 1.8rem;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        /* Main Content Area */
+        .main-content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 380px;
+            background-color: white;
+            padding: 1.2rem;
+            overflow-y: auto;
+            box-shadow: 2px 0 8px rgba(0, 0, 0, 0.08);
+            z-index: 10;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar.collapsed {
+            margin-left: -380px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 1.8rem;
+            padding-bottom: 1.2rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .sidebar-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            color: var(--dark);
+        }
+
+        .section-title i {
+            color: var(--primary);
+        }
+
+        /* Map Container */
+        .map-container {
+            flex: 1;
+            position: relative;
+            background-color: #e9f2ff;
+            overflow: hidden;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Map Controls */
+        .map-controls {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 1000;
+        }
+
+        .control-btn {
+            background-color: white;
+            border: none;
+            width: 42px;
+            height: 42px;
+            border-radius: var(--border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            color: var(--dark);
+            font-size: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .control-btn:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Filter Controls */
+        .filter-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-btn {
+            padding: 0.5rem 0.9rem;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .filter-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        .filter-btn.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .view-toggle {
+            display: flex;
+            background-color: #f0f0f0;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+
+        .view-option {
+            flex: 1;
+            text-align: center;
+            padding: 0.7rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .view-option.active {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Location Cards */
+        .location-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border-left: 4px solid var(--primary);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .location-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .location-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.4rem;
+            color: var(--dark);
+        }
+
+        .location-card .jp-name {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .location-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--gray);
+            margin-top: 0.5rem;
+        }
+
+        /* Itinerary Builder */
+        .itinerary-day {
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .day-title {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 0.95rem;
+        }
+
+        .itinerary-item {
+            background-color: white;
+            padding: 0.75rem;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid var(--secondary-light);
+            cursor: move;
+        }
+
+        .itinerary-item:hover {
+            background-color: #f0f7ff;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--gray);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            color: var(--primary);
+        }
+
+        /* Detail Panel */
+        .detail-panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 420px;
+            height: 100%;
+            background-color: white;
+            box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
+            transform: translateX(100%);
+            transition: transform 0.4s ease;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        .detail-panel.active {
+            transform: translateX(0);
+        }
+
+        .close-detail {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            color: var(--gray);
+            cursor: pointer;
+        }
+
+        .detail-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .detail-header h2 {
+            color: var(--dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+        .detail-header .jp-name {
+            color: var(--gray);
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1rem;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            transition: var(--transition);
+            white-space: nowrap;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            border-bottom-color: var(--primary);
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .detail-info {
+            margin-bottom: 1.5rem;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 0.75rem;
+        }
+
+        .info-label {
+            width: 140px;
+            font-weight: 600;
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--border-radius);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-light);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--secondary-light);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        /* Utility Panel */
+        .utility-panel {
+            position: absolute;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            width: 300px;
+            z-index: 1000;
+            display: none;
+        }
+
+        .utility-panel.active {
+            display: block;
+        }
+
+        /* Map Legend */
+        .map-legend {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1rem;
+            z-index: 1000;
+            width: 180px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        /* Search Bar */
+        .search-container {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            width: 300px;
+        }
+
+        .search-box {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            font-size: 0.95rem;
+        }
+
+        .search-box:focus {
+            outline: 2px solid var(--primary-light);
+        }
+
+        /* Custom Leaflet Popup */
+        .leaflet-popup-content {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .leaflet-popup-content h3 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .leaflet-popup-content .jp-name {
+            color: var(--gray);
+            font-size: 0.85rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 340px;
+            }
+            
+            .detail-panel {
+                width: 100%;
+            }
+            
+            .search-container {
+                width: 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+                padding: 1rem;
+            }
+            
+            .sidebar.collapsed {
+                margin-left: 0;
+                margin-top: -40vh;
+            }
+            
+            .map-container {
+                height: 60vh;
+            }
+            
+            .header-controls {
+                display: none;
+            }
+            
+            .search-container {
+                width: calc(100% - 2rem);
+                left: 1rem;
+            }
+            
+            .utility-panel, .map-legend {
+                width: calc(100% - 3rem);
+                left: 1.5rem;
+                right: 1.5rem;
+            }
+            
+            .map-legend {
+                bottom: 5rem;
+            }
+        }
+
+        /* Utility Classes */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-1 {
+            margin-top: 0.5rem;
+        }
+
+        .mt-2 {
+            margin-top: 1rem;
+        }
+
+        .mt-3 {
+            margin-top: 1.5rem;
+        }
+
+        .mb-1 {
+            margin-bottom: 0.5rem;
+        }
+
+        .mb-2 {
+            margin-bottom: 1rem;
+        }
+
+        .mb-3 {
+            margin-bottom: 1.5rem;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            color: var(--dark);
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .tag.historical {
+            background-color: #ffeaa7;
+        }
+
+        .tag.culinary {
+            background-color: #fab1a0;
+        }
+
+        .tag.nature {
+            background-color: #55efc4;
+        }
+
+        .tag.urban {
+            background-color: #74b9ff;
+        }
+
+        .tag.spiritual {
+            background-color: #a29bfe;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-torii-gate logo-icon"></i>
+                <h1>Japan <span>Travel Guide</span></h1>
+            </div>
+            <div class="header-controls">
+                <button class="btn btn-outline" id="toggle-utilities">
+                    <i class="fas fa-tools"></i> Utilities
+                </button>
+                <button class="btn btn-primary" id="toggle-sidebar">
+                    <i class="fas fa-map-marked-alt"></i> Itinerary Planner
+                </button>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fas fa-filter"></i>
+                        <h3>Filter & Explore</h3>
+                    </div>
+                    
+                    <div class="view-toggle">
+                        <div class="view-option active" data-view="attractions">
+                            <i class="fas fa-landmark"></i> Attractions
+                        </div>
+                        <div class="view-option" data-view="experiences">
+                            <i class="fas fa-mask"></i> Experiences
+                        </div>
+                        <div class="view-option" data-view="practical">
+                            <i class="fas fa-info-circle"></i> Practical
+                        </div>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="historical">Historical</button>
+                        <button class="filter-btn" data-filter="culinary">Culinary</button>
+                        <button class="filter-btn" data-filter="nature">Nature</button>
+                        <button class="filter-btn" data-filter="urban">Urban</button>
+                        <button class="filter-btn" data-filter="spiritual">Spiritual</button>
+                    </div>
+                    
+                    <div class="filter-controls">
+                        <button class="filter-btn" data-region="kanto">Kanto</button>
+                        <button class="filter-btn" data-region="kansai">Kansai</button>
+                        <button class="filter-btn" data-region="chubu">Chubu</button>
+                        <button class="filter-btn" data-region="kyushu">Kyushu</button>
+                        <button class="filter-btn" data-region="hokkaido">Hokkaido</button>
+                        <button class="filter-btn" data-region="all-regions">All Regions</button>
+                    </div>
+                </div>
+                
+                <div class="sidebar-section">
+                    <div class="section-title">
+                        <i class="fas fa-map-pin"></i>
+                        <h3>Popular Locations</h3>
+                        <span class="ml-auto" id="location-count">8 locations</span>
+                    </div>
+                    
+                    <div id="locations-list">
+                        <!-- Location cards will be dynamically inserted here -->
+                    </div>
+                </div>
+                
+                <div class="sidebar-section" style="flex-grow: 1; display: flex; flex-direction: column;">
+                    <div class="section-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3>Itinerary Builder</h3>
+                    </div>
+                    
+                    <div id="itinerary-container" style="flex-grow: 1; overflow-y: auto;">
+                        <div class="itinerary-day" data-day-id="1">
+                            <div class="day-header">
+                                <div class="day-title">Day 1: Tokyo Exploration</div>
+                                <button class="action-btn clear-day" title="Clear day" data-day="1">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="itinerary-items" id="day1-items">
+                                <!-- Itinerary items will be added here -->
+                            </div>
+                        </div>
+                        
+                        <div class="itinerary-day" data-day-id="2">
+                            <div class="day-header">
+                                <div class="day-title">Day 2: Kyoto Cultural</div>
+                                <button class="action-btn clear-day" title="Clear day" data-day="2">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <div class="itinerary-items" id="day2-items">
+                                <!-- Itinerary items will be added here -->
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-2">
+                            <button class="btn btn-outline" id="add-day">
+                                <i class="fas fa-plus"></i> Add Day
+                            </button>
+                            <button class="btn btn-primary" id="calculate-cost">
+                                <i class="fas fa-calculator"></i> Calculate Cost
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="map-container">
+                <div id="map"></div>
+                
+                <div class="search-container">
+                    <input type="text" class="search-box" id="search-box" placeholder="Search locations in Japan...">
+                </div>
+                
+                <div class="map-controls">
+                    <button class="control-btn" id="zoom-in" title="Zoom In">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <button class="control-btn" id="zoom-out" title="Zoom Out">
+                        <i class="fas fa-search-minus"></i>
+                    </button>
+                    <button class="control-btn" id="reset-view" title="Reset View">
+                        <i class="fas fa-globe-asia"></i>
+                    </button>
+                    <button class="control-btn" id="toggle-legend" title="Toggle Legend">
+                        <i class="fas fa-layer-group"></i>
+                    </button>
+                </div>
+                
+                <div class="utility-panel" id="utility-panel">
+                    <div class="section-title">
+                        <i class="fas fa-tools"></i>
+                        <h3>Travel Utilities</h3>
+                        <button class="action-btn ml-auto" id="close-utilities">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-2">
+                        <h4 class="mb-1">JR Pass Calculator</h4>
+                        <div class="flex-between mb-1">
+                            <span>Duration:</span>
+                            <select id="jr-duration" class="btn-outline" style="padding: 0.3rem;">
+                                <option value="7">7 Days</option>
+                                <option value="14">14 Days</option>
+                                <option value="21">21 Days</option>
+                            </select>
+                        </div>
+                        <div class="flex-between mb-2">
+                            <span>Estimated Cost:</span>
+                            <span id="jr-cost">¥29,650</span>
+                        </div>
+                        
+                        <h4 class="mb-1 mt-2">Language Assistant</h4>
+                        <div class="flex-between mb-1">
+                            <span>Essential Phrases:</span>
+                            <button class="btn-outline" style="padding: 0.3rem 0.6rem;" id="show-phrases">
+                                View
+                            </button>
+                        </div>
+                        
+                        <h4 class="mb-1 mt-2">Cultural Guide</h4>
+                        <div class="flex-between">
+                            <span>Etiquette Tips:</span>
+                            <button class="btn-outline" style="padding: 0.3rem 0.6rem;" id="show-etiquette">
+                                Learn
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="map-legend" id="map-legend">
+                    <h4 class="mb-2">Map Legend</h4>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #bc002d;"></div>
+                        <span>Historical Sites</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #10ac84;"></div>
+                        <span>Nature & Parks</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #0abde3;"></div>
+                        <span>Urban Attractions</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #5f27cd;"></div>
+                        <span>Spiritual Sites</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                        <span>Culinary Experiences</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="detail-panel" id="detail-panel">
+                <button class="close-detail" id="close-detail">
+                    <i class="fas fa-times"></i>
+                </button>
+                
+                <div class="detail-header">
+                    <h2 id="detail-title">Fushimi Inari Shrine</h2>
+                    <div class="jp-name" id="detail-jp-name">伏見稲荷大社</div>
+                    <div id="detail-tags"></div>
+                </div>
+                
+                <div class="detail-tabs">
+                    <button class="tab-btn active" data-tab="overview">Overview</button>
+                    <button class="tab-btn" data-tab="getting-there">Getting There</button>
+                    <button class="tab-btn" data-tab="practical">Practical Info</button>
+                    <button class="tab-btn" data-tab="booking">Booking</button>
+                    <button class="tab-btn" data-tab="tips">Pro Tips</button>
+                </div>
+                
+                <div class="tab-content active" id="overview-tab">
+                    <div class="detail-info">
+                        <p id="detail-description">Famous for its thousands of vermilion torii gates, which straddle a network of trails behind its main buildings. The trails lead into the wooded forest of the sacred Mount Inari.</p>
+                        
+                        <div class="info-row">
+                            <div class="info-label">Category:</div>
+                            <div class="info-value" id="detail-category">Shinto Shrine</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Region:</div>
+                            <div class="info-value" id="detail-region">Kansai (Kyoto)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Best Time to Visit:</div>
+                            <div class="info-value" id="detail-best-time">Early morning or late afternoon to avoid crowds</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Visit Duration:</div>
+                            <div class="info-value" id="detail-duration">2-3 hours</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Seasonal Highlights:</div>
+                            <div class="info-value" id="detail-seasonal">Beautiful year-round, especially during autumn foliage</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-between mt-3">
+                        <button class="btn btn-primary" id="add-to-itinerary">
+                            <i class="fas fa-plus-circle"></i> Add to Itinerary
+                        </button>
+                        <button class="btn btn-outline" id="save-to-collection">
+                            <i class="far fa-heart"></i> Save to Collection
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="getting-there-tab">
+                    <div class="detail-info">
+                        <div class="info-row">
+                            <div class="info-label">Nearest Station:</div>
+                            <div class="info-value">Inari Station (JR Nara Line)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Walk Time:</div>
+                            <div class="info-value">5 minutes</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">From Kyoto Station:</div>
+                            <div class="info-value">5 min train ride on JR Nara Line</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">From Osaka:</div>
+                            <div class="info-value">30 min via JR Kyoto Line, then transfer to JR Nara Line</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Parking:</div>
+                            <div class="info-value">Available but limited (paid)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Public Transport:</div>
+                            <div class="info-value">JR Pass valid, local buses also available</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="practical-tab">
+                    <div class="detail-info">
+                        <div class="info-row">
+                            <div class="info-label">Opening Hours:</div>
+                            <div class="info-value">Always open (grounds), buildings 9 AM - 4:30 PM</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Admission:</div>
+                            <div class="info-value">Free</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Accessibility:</div>
+                            <div class="info-value">Partially wheelchair accessible (main area only)</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Multilingual Support:</div>
+                            <div class="info-value">English signs available, limited staff English</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Family Facilities:</div>
+                            <div class="info-value">Restrooms available, stroller-friendly in main areas</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">What to Wear:</div>
+                            <div class="info-value">Comfortable walking shoes, modest clothing recommended</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="booking-tab">
+                    <div class="detail-info">
+                        <div class="info-row">
+                            <div class="info-label">Reservation Required:</div>
+                            <div class="info-value">No</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Official Site:</div>
+                            <div class="info-value"><a href="#" class="booking-link">inari.jp</a></div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Guided Tours:</div>
+                            <div class="info-value">
+                                <a href="#" class="booking-link">Klook</a> | 
+                                <a href="#" class="booking-link">GetYourGuide</a> | 
+                                <a href="#" class="booking-link">Viator</a>
+                            </div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Special Events:</div>
+                            <div class="info-value">Check website for festival schedules</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Group Discounts:</div>
+                            <div class="info-value">Not applicable (free entry)</div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <button class="btn btn-secondary" style="width: 100%;">
+                            <i class="fas fa-external-link-alt"></i> Book Guided Tour
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="tab-content" id="tips-tab">
+                    <div class="detail-info">
+                        <h4 class="mb-1">Local Insights</h4>
+                        <ul>
+                            <li>The higher you go, the fewer tourists you'll encounter</li>
+                            <li>Try the inari sushi (fried tofu pockets) sold at stalls near the entrance</li>
+                            <li>Visit on a weekday to avoid the largest crowds</li>
+                            <li>Wear comfortable shoes as the hike can be strenuous</li>
+                        </ul>
+                        
+                        <h4 class="mt-2 mb-1">Photo Spots</h4>
+                        <ul>
+                            <li>The main gate (Romon) with the mountain backdrop</li>
+                            <li>The Senbon Torii (thousands of gates) area</li>
+                            <li>Viewpoints about 30-45 minutes up the trail</li>
+                        </ul>
+                        
+                        <h4 class="mt-2 mb-1">Nearby Attractions</h4>
+                        <ul>
+                            <li>Tofukuji Temple (10 min walk)</li>
+                            <li>Fushimi Sake District (15 min walk)</li>
+                        </ul>
+                        
+                        <h4 class="mt-2 mb-1">Cultural Etiquette</h4>
+                        <ul>
+                            <li>Bow slightly before entering torii gates</li>
+                            <li>Stay to the left on paths to allow others to pass</li>
+                            <li>Be respectful and quiet in sacred areas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Extensive location database
+        const locationsData = [
+            {
+                id: 1,
+                name: "Fushimi Inari Shrine",
+                jpName: "伏見稲荷大社",
+                description: "Famous for its thousands of vermilion torii gates, which straddle a network of trails behind its main buildings. The trails lead into the wooded forest of the sacred Mount Inari.",
+                category: "Shinto Shrine",
+                tags: ["historical", "spiritual", "nature"],
+                region: "kansai",
+                coordinates: [34.9671, 135.7727], // Kyoto
+                bestTime: "Early morning or late afternoon to avoid crowds",
+                duration: "2-3 hours",
+                admission: "Free",
+                openingHours: "Always open (grounds), buildings 9 AM - 4:30 PM",
+                accessibility: "Partially wheelchair accessible (main area only)",
+                nearestStation: "Inari Station (JR Nara Line)",
+                walkTime: "5 minutes",
+                fromMajorHub: "5 min train ride from Kyoto Station",
+                parking: "Available but limited (paid)",
+                multilingual: "English signs available, limited staff English",
+                facilities: "Restrooms, souvenir shops, food stalls",
+                seasonal: "Beautiful year-round, especially during autumn foliage",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "https://inari.jp",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "The higher you go, the fewer tourists you'll encounter",
+                    "Try the inari sushi (fried tofu pockets) sold at stalls near the entrance",
+                    "Visit on a weekday to avoid the largest crowds",
+                    "Wear comfortable shoes as the hike can be strenuous"
+                ],
+                photoSpots: [
+                    "The main gate (Romon) with the mountain backdrop",
+                    "The Senbon Torii (thousands of gates) area",
+                    "Viewpoints about 30-45 minutes up the trail"
+                ],
+                nearbyAttractions: [
+                    "Tofukuji Temple (10 min walk)",
+                    "Fushimi Sake District (15 min walk)"
+                ],
+                etiquette: [
+                    "Bow slightly before entering torii gates",
+                    "Stay to the left on paths to allow others to pass",
+                    "Be respectful and quiet in sacred areas"
+                ]
+            },
+            {
+                id: 2,
+                name: "Tokyo Skytree",
+                jpName: "東京スカイツリー",
+                description: "The tallest structure in Japan, offering panoramic views of Tokyo from its observation decks. Includes shopping, dining, and entertainment facilities.",
+                category: "Observation Tower",
+                tags: ["urban"],
+                region: "kanto",
+                coordinates: [35.7101, 139.8107], // Tokyo
+                bestTime: "Clear days for best visibility, just before sunset for day/night views",
+                duration: "1-2 hours",
+                admission: "¥2,100-¥3,100 (varies by deck)",
+                openingHours: "8:00 AM - 10:00 PM (last entry 9:00 PM)",
+                accessibility: "Fully wheelchair accessible",
+                nearestStation: "Tokyo Skytree Station",
+                walkTime: "2 minutes",
+                fromMajorHub: "15 min from Tokyo Station via train",
+                parking: "Available (paid)",
+                multilingual: "Multilingual staff and signage",
+                facilities: "Restaurants, shops, aquarium, planetarium, restrooms",
+                seasonal: "Great year-round, but best on clear winter days",
+                reservation: "Recommended (especially for sunset)",
+                bookingLinks: {
+                    official: "https://www.tokyo-skytree.jp",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Book tickets online to skip the long queues",
+                    "Visit just before sunset to see both day and night views",
+                    "The higher Tembo Galleria deck costs extra but is less crowded",
+                    "Check visibility forecast before going"
+                ],
+                photoSpots: [
+                    "Observation decks with Tokyo panorama",
+                    "The Skytree itself from Solamachi shopping mall",
+                    "Night view with city lights"
+                ],
+                nearbyAttractions: [
+                    "Asakusa and Sensoji Temple (20 min walk)",
+                    "Sumida Aquarium (in same building)",
+                    "Tokyo Solamachi shopping complex"
+                ],
+                etiquette: [
+                    "No tripods allowed on observation decks",
+                    "Be mindful of others when taking photos",
+                    "Follow staff instructions during crowded times"
+                ]
+            },
+            {
+                id: 3,
+                name: "Arashiyama Bamboo Grove",
+                jpName: "嵐山竹林の小径",
+                description: "A breathtaking natural bamboo forest path that creates a surreal atmosphere as sunlight filters through the tall stalks. Part of the larger Arashiyama district.",
+                category: "Natural Landscape",
+                tags: ["nature", "spiritual"],
+                region: "kansai",
+                coordinates: [35.0172, 135.6720], // Kyoto
+                bestTime: "Early morning to avoid crowds (before 8 AM)",
+                duration: "30-60 minutes",
+                admission: "Free",
+                openingHours: "24/7, accessible anytime",
+                accessibility: "Wheelchair accessible (main path)",
+                nearestStation: "Arashiyama Station",
+                walkTime: "10 minutes",
+                fromMajorHub: "30 min from Kyoto Station via train",
+                parking: "Limited paid parking available",
+                multilingual: "Limited English signage",
+                facilities: "Nearby restrooms and shops in Arashiyama district",
+                seasonal: "Beautiful year-round, but especially in spring and autumn",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "#",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Arrive before 8 AM for the most peaceful experience",
+                    "Continue to the nearby Okochi Sanso Garden for tea and views",
+                    "Combine with a visit to the nearby Monkey Park",
+                    "Visit on a weekday for fewer crowds"
+                ],
+                photoSpots: [
+                    "The main path looking upward",
+                    "Side paths with fewer people",
+                    "Morning light filtering through bamboo"
+                ],
+                nearbyAttractions: [
+                    "Tenryu-ji Temple (adjacent)",
+                    "Iwatayama Monkey Park (15 min walk)",
+                    "Togetsukyo Bridge (5 min walk)"
+                ],
+                etiquette: [
+                    "Stay on designated paths",
+                    "Keep noise levels low",
+                    "Do not damage or carve bamboo"
+                ]
+            },
+            {
+                id: 4,
+                name: "Osaka Castle",
+                jpName: "大阪城",
+                description: "One of Japan's most famous landmarks, with a museum inside and beautiful surrounding park and gardens. Reconstructed in 1931 with modern interiors.",
+                category: "Historical Castle",
+                tags: ["historical", "urban"],
+                region: "kansai",
+                coordinates: [34.6873, 135.5258], // Osaka
+                bestTime: "Spring for cherry blossoms or autumn for foliage",
+                duration: "2-3 hours",
+                admission: "¥600 (castle only), park is free",
+                openingHours: "9:00 AM - 5:00 PM (castle), park always open",
+                accessibility: "Elevators available inside castle",
+                nearestStation: "Osakajokoen Station",
+                walkTime: "15 minutes from station",
+                fromMajorHub: "10 min from Osaka Station via train",
+                parking: "Available (paid)",
+                multilingual: "Multilingual museum displays, audio guides available",
+                facilities: "Museum, restrooms, souvenir shops, vending machines",
+                seasonal: "Cherry blossoms in early April, autumn foliage in November",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "https://www.osakacastle.net",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Visit the Nishinomaru Garden for the best photo spots",
+                    "Go to the top floor for panoramic views of Osaka",
+                    "Avoid weekends if possible due to crowds",
+                    "Combined ticket available with museum"
+                ],
+                photoSpots: [
+                    "Castle reflected in the moat",
+                    "View from Nishinomaru Garden",
+                    "Top floor observation deck",
+                    "Cherry blossom views in spring"
+                ],
+                nearbyAttractions: [
+                    "Osaka Museum of History (10 min walk)",
+                    "Osaka Business Park area",
+                    "Kyobashi shopping district"
+                ],
+                etiquette: [
+                    "No flash photography in museum",
+                    "Remove shoes in certain areas if required",
+                    "Be respectful of historical artifacts"
+                ]
+            },
+            {
+                id: 5,
+                name: "Shibuya Crossing",
+                jpName: "渋谷スクランブル交差点",
+                description: "The world's busiest pedestrian crossing, an iconic symbol of Tokyo's urban energy. Surrounded by giant video screens and neon advertisements.",
+                category: "Urban Landmark",
+                tags: ["urban"],
+                region: "kanto",
+                coordinates: [35.6595, 139.7005], // Tokyo
+                bestTime: "Evening for neon lights, or from above at Starbucks",
+                duration: "30-60 minutes",
+                admission: "Free",
+                openingHours: "Always accessible",
+                accessibility: "Street level is wheelchair accessible",
+                nearestStation: "Shibuya Station",
+                walkTime: "Direct access from station",
+                fromMajorHub: "10 min from Shinjuku via train",
+                parking: "Limited and expensive; use public transport",
+                multilingual: "Area has many English signs",
+                facilities: "Countless shops, restaurants, cafes nearby",
+                seasonal: "Good year-round, but especially festive during holidays",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "#",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Watch from the 2nd floor of Shibuya Station or Starbucks for the best view",
+                    "Visit at night for the neon light spectacle",
+                    "Combine with shopping in Shibuya area",
+                    "Try the famous Shibuya109 department store"
+                ],
+                photoSpots: [
+                    "From Shibuya Station footbridge",
+                    "From the Starbucks Tsutaya store",
+                    "In the middle of the crossing (carefully!)",
+                    "Hachiko Statue area"
+                ],
+                nearbyAttractions: [
+                    "Hachiko Statue (just outside station)",
+                    "Shibuya 109 shopping mall",
+                    "Shibuya Sky observation deck",
+                    "Center Street shopping district"
+                ],
+                etiquette: [
+                    "Follow traffic signals",
+                    "Keep moving with the crowd",
+                    "Be aware of your surroundings"
+                ]
+            },
+            {
+                id: 6,
+                name: "Hiroshima Peace Memorial",
+                jpName: "広島平和記念碑",
+                description: "A UNESCO World Heritage site commemorating the victims of the world's first atomic bombing. The skeletal remains of the building stand as a powerful symbol.",
+                category: "Historical Memorial",
+                tags: ["historical", "spiritual"],
+                region: "chugoku",
+                coordinates: [34.3955, 132.4536], // Hiroshima
+                bestTime: "Early morning for quiet reflection",
+                duration: "2-3 hours",
+                admission: "Free (park), museum: ¥200",
+                openingHours: "Park always open, museum 8:30 AM - 6:00 PM (until 7 PM Aug, 5 PM Dec-Feb)",
+                accessibility: "Wheelchair accessible with ramps",
+                nearestStation: "Genbaku Dome-mae Station",
+                walkTime: "5 minutes",
+                fromMajorHub: "25 min from Hiroshima Station via tram",
+                parking: "Limited; public transport recommended",
+                multilingual: "Extensive multilingual displays in museum, audio guides",
+                facilities: "Museum, restrooms, information center, prayer area",
+                seasonal: "Peace Memorial Ceremony on August 6",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "https://hpmmuseum.jp",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Visit the museum first for historical context",
+                    "Attend the peace bell ringing ceremony if possible",
+                    "Combine with a visit to Miyajima Island",
+                    "Allow time for quiet reflection"
+                ],
+                photoSpots: [
+                    "The A-Bomb Dome from across the river",
+                    "Children's Peace Monument",
+                    "Peace Flame and Cenotaph alignment",
+                    "Memorial Museum entrance"
+                ],
+                nearbyAttractions: [
+                    "Hiroshima Castle (15 min walk)",
+                    "Shukkeien Garden (10 min walk)",
+                    "Miyajima Island (30 min by ferry)",
+                    "Hiroshima Peace Park"
+                ],
+                etiquette: [
+                    "Maintain a respectful silence",
+                    "No eating or drinking in memorial areas",
+                    "Dress modestly and respectfully"
+                ]
+            },
+            {
+                id: 7,
+                name: "Mount Fuji",
+                jpName: "富士山",
+                description: "Japan's highest mountain and an active volcano, considered sacred and a symbol of Japan. Offers hiking, views, and cultural significance.",
+                category: "Natural Landmark",
+                tags: ["nature", "spiritual"],
+                region: "chubu",
+                coordinates: [35.3606, 138.7274], // Mount Fuji
+                bestTime: "July to September for climbing, clear days for viewing",
+                duration: "Full day for climbing, 1-2 hours for viewing",
+                admission: "Free to view, climbing donations accepted",
+                openingHours: "Always visible (weather permitting)",
+                accessibility: "Viewing points accessible, climbing is strenuous",
+                nearestStation: "Kawaguchiko Station",
+                walkTime: "Varies by viewing point",
+                fromMajorHub: "2 hours from Tokyo by train/bus",
+                parking: "Available at viewing points",
+                multilingual: "Limited English at tourist centers",
+                facilities: "Visitor centers, restrooms at popular viewing spots, mountain huts for climbers",
+                seasonal: "Climbing season: July to early September, best views in winter",
+                reservation: "Required for mountain huts during climbing season",
+                bookingLinks: {
+                    official: "https://www.fujisan-climb.jp",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Best views are from Lake Kawaguchiko north shore",
+                    "Climbing season is short (July-early September)",
+                    "Check visibility forecasts before planning a viewing trip",
+                    "Sunrise view (Goraiko) is spectacular but crowded"
+                ],
+                photoSpots: [
+                    "Chureito Pagoda with Fuji in background",
+                    "Lake Kawaguchiko reflections",
+                    "From the Gotemba Peace Park",
+                    "Fuji Five Lakes area"
+                ],
+                nearbyAttractions: [
+                    "Fuji Five Lakes region",
+                    "Hakone hot springs",
+                    "Fuji-Q Highland amusement park",
+                    "Oshino Hakkai springs"
+                ],
+                etiquette: [
+                    "Respect sacred sites on the mountain",
+                    "Carry out all trash when climbing",
+                    "Follow marked trails and instructions"
+                ]
+            },
+            {
+                id: 8,
+                name: "Sapporo Snow Festival",
+                jpName: "さっぽろ雪まつり",
+                description: "One of Japan's largest winter events featuring spectacular snow and ice sculptures. Includes multiple sites with different themes and activities.",
+                category: "Seasonal Festival",
+                tags: ["culinary", "urban"],
+                region: "hokkaido",
+                coordinates: [43.0618, 141.3545], // Sapporo
+                bestTime: "Early February (dates vary annually), evenings for illuminations",
+                duration: "2-4 hours",
+                admission: "Free",
+                openingHours: "All day, sculptures lit until 10 PM",
+                accessibility: "Main sites wheelchair accessible (snow permitting)",
+                nearestStation: "Odori Station or Sapporo Station",
+                walkTime: "5-10 minutes from stations",
+                fromMajorHub: "90 min flight from Tokyo to Sapporo",
+                parking: "Limited; public transport recommended",
+                multilingual: "English maps and information available",
+                facilities: "Food stalls, restrooms, warming stations, information centers",
+                seasonal: "Held annually in early February (check dates)",
+                reservation: "Not required for festival, recommended for accommodations",
+                bookingLinks: {
+                    official: "https://www.snowfes.com",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Visit in the evening to see sculptures illuminated",
+                    "Try local Hokkaido specialties at food stalls",
+                    "Dress very warmly - temperatures can be below freezing",
+                    "Visit on weekdays to avoid largest crowds"
+                ],
+                photoSpots: [
+                    "Large snow sculptures at Odori Park",
+                    "Ice sculptures at Susukino site",
+                    "Night illumination of all sculptures",
+                    "International snow sculpture competition entries"
+                ],
+                nearbyAttractions: [
+                    "Sapporo Beer Museum",
+                    "Historical Village of Hokkaido",
+                    "Mount Moiwa ropeway",
+                    "Sapporo Clock Tower"
+                ],
+                etiquette: [
+                    "Do not climb on sculptures",
+                    "Respect barriers and signs",
+                    "Dispose of trash properly"
+                ]
+            },
+            {
+                id: 9,
+                name: "Nara Park Deer",
+                jpName: "奈良公園の鹿",
+                description: "Historic park famous for its hundreds of freely roaming deer, considered messengers of the gods. Visitors can feed and interact with the deer.",
+                category: "Park & Wildlife",
+                tags: ["nature", "historical"],
+                region: "kansai",
+                coordinates: [34.6851, 135.8388], // Nara
+                bestTime: "Morning when deer are hungry and more active",
+                duration: "1-2 hours",
+                admission: "Free (park), deer crackers: ¥200",
+                openingHours: "Park always open",
+                accessibility: "Mostly wheelchair accessible",
+                nearestStation: "Kintetsu Nara Station or JR Nara Station",
+                walkTime: "5 minutes from stations",
+                fromMajorHub: "45 min from Kyoto or Osaka",
+                parking: "Available (paid)",
+                multilingual: "Some English signs",
+                facilities: "Deer cracker stalls, restrooms, benches",
+                seasonal: "Beautiful in all seasons, cherry blossoms in spring",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "#",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Buy deer crackers from vendors (not bring your own food)",
+                    "Hold crackers high to make deer bow (they're trained!)",
+                    "Be careful of aggressive deer during feeding time",
+                    "Visit nearby Todai-ji Temple after seeing the deer"
+                ],
+                photoSpots: [
+                    "Deer bowing for crackers",
+                    "Deer resting under cherry blossoms",
+                    "Deer near Todai-ji Temple entrance",
+                    "Park landscape with deer"
+                ],
+                nearbyAttractions: [
+                    "Todai-ji Temple (5 min walk)",
+                    "Kasuga Taisha Shrine (10 min walk)",
+                    "Nara National Museum (5 min walk)",
+                    "Kofuku-ji Temple (10 min walk)"
+                ],
+                etiquette: [
+                    "Feed only deer crackers sold in park",
+                    "Bow back when deer bow to you",
+                    "Do not tease or chase the deer",
+                    "Keep crackers hidden until ready to feed"
+                ]
+            },
+            {
+                id: 10,
+                name: "Kinkaku-ji (Golden Pavilion)",
+                jpName: "金閣寺",
+                description: "A Zen Buddhist temple covered in gold leaf, reflected in a tranquil pond. One of Kyoto's most iconic and photographed sights.",
+                category: "Temple",
+                tags: ["historical", "spiritual"],
+                region: "kansai",
+                coordinates: [35.0394, 135.7292], // Kyoto
+                bestTime: "Morning on weekdays to avoid crowds",
+                duration: "45-60 minutes",
+                admission: "¥400",
+                openingHours: "9:00 AM - 5:00 PM",
+                accessibility: "Mostly accessible, some gravel paths",
+                nearestStation: "Kinkakuji-michi bus stop",
+                walkTime: "10 minutes from bus stop",
+                fromMajorHub: "40 min from Kyoto Station by bus",
+                parking: "Available (paid)",
+                multilingual: "English brochures and signs",
+                facilities: "Souvenir shop, tea garden (additional fee), restrooms",
+                seasonal: "Beautiful year-round, especially with snow in winter",
+                reservation: "Not required",
+                bookingLinks: {
+                    official: "http://www.shokoku-ji.jp/kinkakuji",
+                    klook: "#",
+                    getYourGuide: "#",
+                    viator: "#"
+                },
+                proTips: [
+                    "Visit on a sunny day for best reflection photos",
+                    "Go early to avoid tour bus crowds",
+                    "Try matcha tea at the tea garden",
+                    "Combine with Ryoan-ji Temple (stone garden) nearby"
+                ],
+                photoSpots: [
+                    "Main view across the pond",
+                    "Golden reflection in water",
+                    "From different angles along the path",
+                    "With autumn colors or snow"
+                ],
+                nearbyAttractions: [
+                    "Ryoan-ji Temple (10 min by bus)",
+                    "Ninna-ji Temple (15 min walk)",
+                    "Kitano Tenmangu Shrine (20 min by bus)",
+                    "Kyoto Imperial Palace (25 min by bus)"
+                ],
+                etiquette: [
+                    "No photography inside buildings",
+                    "Speak quietly in temple grounds",
+                    "Follow the one-way walking path"
+                ]
+            }
+        ];
+
+        // Current application state
+        const appState = {
+            currentView: 'attractions',
+            currentFilter: 'all',
+            currentRegion: 'all',
+            selectedLocation: null,
+            itinerary: {
+                days: [
+                    { id: 1, title: "Day 1: Tokyo Exploration", items: [] },
+                    { id: 2, title: "Day 2: Kyoto Cultural", items: [] }
+                ]
+            },
+            savedLocations: [],
+            map: null,
+            markers: []
+        };
+
+        // DOM Elements
+        const mapElement = document.getElementById('map');
+        const locationsList = document.getElementById('locations-list');
+        const detailPanel = document.getElementById('detail-panel');
+        const sidebar = document.getElementById('sidebar');
+        const toggleSidebarBtn = document.getElementById('toggle-sidebar');
+        const viewOptions = document.querySelectorAll('.view-option');
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const closeDetailBtn = document.getElementById('close-detail');
+        const addToItineraryBtn = document.getElementById('add-to-itinerary');
+        const saveToCollectionBtn = document.getElementById('save-to-collection');
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        const resetViewBtn = document.getElementById('reset-view');
+        const toggleLegendBtn = document.getElementById('toggle-legend');
+        const addDayBtn = document.getElementById('add-day');
+        const calculateCostBtn = document.getElementById('calculate-cost');
+        const toggleUtilitiesBtn = document.getElementById('toggle-utilities');
+        const utilityPanel = document.getElementById('utility-panel');
+        const closeUtilitiesBtn = document.getElementById('close-utilities');
+        const mapLegend = document.getElementById('map-legend');
+        const searchBox = document.getElementById('search-box');
+        const jrDurationSelect = document.getElementById('jr-duration');
+        const jrCostElement = document.getElementById('jr-cost');
+        const locationCountElement = document.getElementById('location-count');
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+            renderLocationCards();
+            setupEventListeners();
+            setupItineraryDragAndDrop();
+            
+            // Add some sample itinerary items
+            addSampleItineraryItems();
+            
+            // Initialize JR Pass calculator
+            updateJrPassCost();
+        });
+
+        // Initialize the Leaflet map
+        function initMap() {
+            // Create map centered on Japan
+            appState.map = L.map('map').setView([36.2048, 138.2529], 6);
+            
+            // Add tile layer (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+                maxZoom: 18,
+            }).addTo(appState.map);
+            
+            // Add custom markers for each location
+            locationsData.forEach(location => {
+                addMapMarker(location);
+            });
+            
+            // Add Japan outline layer
+            addJapanOutline();
+            
+            // Add scale control
+            L.control.scale({imperial: false}).addTo(appState.map);
+        }
+
+        // Add a marker to the map for a location
+        function addMapMarker(location) {
+            // Choose marker color based on primary tag
+            let color = '#bc002d'; // default red for historical
+            if (location.tags.includes('nature')) color = '#10ac84';
+            if (location.tags.includes('urban')) color = '#0abde3';
+            if (location.tags.includes('spiritual')) color = '#5f27cd';
+            if (location.tags.includes('culinary')) color = '#ff6b6b';
+            
+            // Create custom icon
+            const icon = L.divIcon({
+                html: `<div style="background-color: ${color}; width: 20px; height: 20px; border-radius: 50%; border: 3px solid white; box-shadow: 0 0 5px rgba(0,0,0,0.5); cursor: pointer;"></div>`,
+                className: 'custom-marker',
+                iconSize: [26, 26],
+                iconAnchor: [13, 13]
+            });
+            
+            // Create marker
+            const marker = L.marker(location.coordinates, { icon: icon })
+                .addTo(appState.map)
+                .bindPopup(createPopupContent(location))
+                .on('click', function() {
+                    showLocationDetails(location.id);
+                });
+            
+            // Store marker reference
+            appState.markers.push({
+                id: location.id,
+                marker: marker,
+                location: location
+            });
+            
+            return marker;
+        }
+
+        // Create popup content for map markers
+        function createPopupContent(location) {
+            return `
+                <div style="font-family: 'Noto Sans JP', sans-serif; max-width: 250px;">
+                    <h3 style="color: #bc002d; margin: 0 0 5px 0;">${location.name}</h3>
+                    <div style="color: #666; font-size: 0.9em; margin-bottom: 8px;">${location.jpName}</div>
+                    <div style="margin-bottom: 8px;">
+                        ${location.tags.map(tag => `<span style="display: inline-block; background: #f0f0f0; padding: 2px 6px; border-radius: 10px; font-size: 0.8em; margin-right: 4px; margin-bottom: 4px;">${tag}</span>`).join('')}
+                    </div>
+                    <p style="margin: 0; font-size: 0.9em;">${location.description.substring(0, 100)}...</p>
+                    <div style="margin-top: 8px; text-align: center;">
+                        <button onclick="window.detailPopupClick(${location.id})" style="background: #bc002d; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.9em;">View Details</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Add Japan outline to map
+        function addJapanOutline() {
+            // Simplified Japan polygon coordinates
+            const japanCoords = [
+                [45.5572, 141.9139], // Hokkaido north
+                [43.3864, 145.8172], // Hokkaido east
+                [41.5785, 140.9912], // Hokkaido south
+                [40.8224, 140.7407], // Aomori
+                [39.7000, 142.0000], // Iwate coast
+                [38.2586, 141.0215], // Miyagi
+                [36.0000, 140.0000], // Ibaraki
+                [35.0000, 140.0000], // Chiba
+                [34.0000, 139.0000], // Tokyo Bay
+                [33.0000, 135.0000], // Kii Peninsula
+                [32.0000, 130.0000], // Kyushu
+                [31.0000, 131.0000], // Miyazaki
+                [30.0000, 130.0000], // Kagoshima
+                [31.0000, 129.0000], // Nagasaki
+                [33.0000, 129.0000], // Fukuoka
+                [34.0000, 131.0000], // Yamaguchi
+                [35.0000, 132.0000], // Shimane
+                [36.0000, 133.0000], // Tottori
+                [36.0000, 135.0000], // Kyoto
+                [37.0000, 137.0000], // Toyama
+                [39.0000, 139.0000], // Akita
+                [41.0000, 140.0000], // Aomori
+                [45.0000, 142.0000]  // Back to Hokkaido
+            ];
+            
+            // Create polygon
+            const japanPolygon = L.polygon(japanCoords, {
+                color: '#005bac',
+                weight: 2,
+                opacity: 0.3,
+                fillOpacity: 0.05,
+                fillColor: '#005bac'
+            }).addTo(appState.map);
+        }
+
+        // Render location cards in the sidebar
+        function renderLocationCards() {
+            locationsList.innerHTML = '';
+            
+            const filteredLocations = locationsData.filter(location => {
+                // Filter by view type
+                if (appState.currentView === 'attractions' && 
+                    !['historical', 'nature', 'urban', 'spiritual'].some(tag => location.tags.includes(tag))) {
+                    return false;
+                }
+                
+                if (appState.currentView === 'experiences' && 
+                    !['culinary'].some(tag => location.tags.includes(tag))) {
+                    return false;
+                }
+                
+                // Filter by tag
+                if (appState.currentFilter !== 'all' && !location.tags.includes(appState.currentFilter)) {
+                    return false;
+                }
+                
+                // Filter by region
+                if (appState.currentRegion !== 'all' && appState.currentRegion !== 'all-regions' && location.region !== appState.currentRegion) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Update location count
+            locationCountElement.textContent = `${filteredLocations.length} locations`;
+            
+            filteredLocations.forEach(location => {
+                const card = document.createElement('div');
+                card.className = 'location-card';
+                card.setAttribute('data-id', location.id);
+                
+                // Primary tag for color coding
+                const primaryTag = location.tags[0] || 'historical';
+                
+                card.innerHTML = `
+                    <h3>${location.name}</h3>
+                    <div class="jp-name">${location.jpName}</div>
+                    <p>${location.description.substring(0, 80)}...</p>
+                    <div class="location-meta">
+                        <div>
+                            ${location.tags.map(tag => `<span class="tag ${tag}">${tag}</span>`).join('')}
+                        </div>
+                        <div>
+                            <i class="far fa-clock"></i> ${location.duration}
+                        </div>
+                    </div>
+                `;
+                
+                card.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    showLocationDetails(id);
+                    // Center map on location
+                    const loc = locationsData.find(l => l.id === id);
+                    if (loc) {
+                        appState.map.setView(loc.coordinates, 12);
+                    }
+                });
+                
+                locationsList.appendChild(card);
+            });
+            
+            // If no locations match the filter
+            if (filteredLocations.length === 0) {
+                locationsList.innerHTML = `
+                    <div class="text-center" style="padding: 2rem; color: var(--gray);">
+                        <i class="fas fa-map-marker-alt" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No locations found matching your filters.</p>
+                        <button class="btn btn-outline mt-2" id="reset-filters">Reset Filters</button>
+                    </div>
+                `;
+                
+                document.getElementById('reset-filters')?.addEventListener('click', resetFilters);
+            }
+        }
+
+        // Show location details in the detail panel
+        function showLocationDetails(id) {
+            const location = locationsData.find(loc => loc.id === id);
+            if (!location) return;
+            
+            appState.selectedLocation = location;
+            
+            // Update detail panel content
+            document.getElementById('detail-title').textContent = location.name;
+            document.getElementById('detail-jp-name').textContent = location.jpName;
+            document.getElementById('detail-description').textContent = location.description;
+            document.getElementById('detail-category').textContent = location.category;
+            document.getElementById('detail-region').textContent = getRegionName(location.region);
+            document.getElementById('detail-best-time').textContent = location.bestTime;
+            document.getElementById('detail-duration').textContent = location.duration;
+            document.getElementById('detail-seasonal').textContent = location.seasonal || 'Beautiful year-round';
+            
+            // Update tags
+            const tagsContainer = document.getElementById('detail-tags');
+            tagsContainer.innerHTML = location.tags.map(tag => 
+                `<span class="tag ${tag}">${tag}</span>`
+            ).join('');
+            
+            // Show the detail panel
+            detailPanel.classList.add('active');
+            
+            // Update "Add to Itinerary" button
+            addToItineraryBtn.innerHTML = `<i class="fas fa-plus-circle"></i> Add to Itinerary`;
+            
+            // Update "Save to Collection" button
+            const isSaved = appState.savedLocations.includes(id);
+            saveToCollectionBtn.innerHTML = isSaved 
+                ? `<i class="fas fa-heart"></i> Saved` 
+                : `<i class="far fa-heart"></i> Save to Collection`;
+        }
+
+        // Get region name from region ID
+        function getRegionName(regionId) {
+            const regions = {
+                'hokkaido': 'Hokkaido',
+                'tohoku': 'Tohoku',
+                'kanto': 'Kanto (Tokyo Area)',
+                'chubu': 'Chubu (Central Japan)',
+                'kansai': 'Kansai (Kyoto/Osaka)',
+                'chugoku': 'Chugoku (Hiroshima)',
+                'shikoku': 'Shikoku',
+                'kyushu': 'Kyushu'
+            };
+            return regions[regionId] || regionId;
+        }
+
+        // Update JR Pass cost based on duration
+        function updateJrPassCost() {
+            const duration = parseInt(jrDurationSelect.value);
+            let cost = 29650; // 7-day base cost
+            
+            if (duration === 14) cost = 47250;
+            if (duration === 21) cost = 60450;
+            
+            jrCostElement.textContent = `¥${cost.toLocaleString()}`;
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // View toggle buttons
+            viewOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    viewOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    appState.currentView = this.getAttribute('data-view');
+                    renderLocationCards();
+                });
+            });
+
+            // Filter buttons
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    // Handle region filters
+                    if (this.hasAttribute('data-region')) {
+                        const region = this.getAttribute('data-region');
+                        filterBtns.forEach(b => b.classList.remove('active'));
+                        this.classList.add('active');
+                        appState.currentRegion = region;
+                        appState.currentFilter = 'all';
+                    } 
+                    // Handle tag filters
+                    else if (this.hasAttribute('data-filter')) {
+                        const filter = this.getAttribute('data-filter');
+                        filterBtns.forEach(b => {
+                            if (!b.hasAttribute('data-region')) {
+                                b.classList.remove('active');
+                            }
+                        });
+                        this.classList.add('active');
+                        appState.currentFilter = filter;
+                        appState.currentRegion = 'all';
+                    }
+                    
+                    renderLocationCards();
+                });
+            });
+
+            // Tab buttons in detail panel
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab button
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding tab content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // Close detail panel
+            closeDetailBtn.addEventListener('click', function() {
+                detailPanel.classList.remove('active');
+            });
+
+            // Add to itinerary button
+            addToItineraryBtn.addEventListener('click', function() {
+                if (!appState.selectedLocation) return;
+                
+                // Ask which day to add to
+                const dayOptions = appState.itinerary.days.map(day => 
+                    `<option value="${day.id}">${day.title}</option>`
+                ).join('');
+                
+                const dayId = prompt(`Which day would you like to add "${appState.selectedLocation.name}" to?\n\n${appState.itinerary.days.map(day => `${day.id}: ${day.title}`).join('\n')}\n\nEnter day number:`, "1");
+                
+                if (dayId && parseInt(dayId) >= 1 && parseInt(dayId) <= appState.itinerary.days.length) {
+                    const day = appState.itinerary.days.find(d => d.id === parseInt(dayId));
+                    if (day) {
+                        // Check if already in itinerary
+                        if (!day.items.some(item => item.id === appState.selectedLocation.id)) {
+                            day.items.push({
+                                id: appState.selectedLocation.id,
+                                name: appState.selectedLocation.name,
+                                duration: appState.selectedLocation.duration,
+                                cost: appState.selectedLocation.admission === 'Free' ? 0 : 1000
+                            });
+                            updateItineraryDisplay();
+                            
+                            // Update button to show success
+                            this.innerHTML = `<i class="fas fa-check"></i> Added!`;
+                            this.style.backgroundColor = 'var(--success)';
+                            
+                            setTimeout(() => {
+                                this.innerHTML = `<i class="fas fa-plus-circle"></i> Add to Itinerary`;
+                                this.style.backgroundColor = '';
+                            }, 2000);
+                        } else {
+                            alert('This location is already in your itinerary for this day.');
+                        }
+                    }
+                }
+            });
+
+            // Save to collection button
+            saveToCollectionBtn.addEventListener('click', function() {
+                if (!appState.selectedLocation) return;
+                
+                const locationId = appState.selectedLocation.id;
+                const index = appState.savedLocations.indexOf(locationId);
+                
+                if (index === -1) {
+                    // Add to collection
+                    appState.savedLocations.push(locationId);
+                    this.innerHTML = `<i class="fas fa-heart"></i> Saved`;
+                    this.style.backgroundColor = 'var(--danger)';
+                    
+                    // Show notification
+                    showNotification(`"${appState.selectedLocation.name}" saved to your collection!`);
+                } else {
+                    // Remove from collection
+                    appState.savedLocations.splice(index, 1);
+                    this.innerHTML = `<i class="far fa-heart"></i> Save to Collection`;
+                    this.style.backgroundColor = '';
+                    
+                    // Show notification
+                    showNotification(`"${appState.selectedLocation.name}" removed from your collection.`);
+                }
+            });
+
+            // Toggle sidebar
+            toggleSidebarBtn.addEventListener('click', function() {
+                sidebar.classList.toggle('collapsed');
+                this.innerHTML = sidebar.classList.contains('collapsed') 
+                    ? `<i class="fas fa-map"></i> Show Planner`
+                    : `<i class="fas fa-map-marked-alt"></i> Itinerary Planner`;
+            });
+
+            // Map controls
+            zoomInBtn.addEventListener('click', function() {
+                appState.map.zoomIn();
+            });
+
+            zoomOutBtn.addEventListener('click', function() {
+                appState.map.zoomOut();
+            });
+
+            resetViewBtn.addEventListener('click', function() {
+                appState.map.setView([36.2048, 138.2529], 6);
+            });
+
+            toggleLegendBtn.addEventListener('click', function() {
+                mapLegend.classList.toggle('hidden');
+            });
+
+            // Search functionality
+            searchBox.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                if (searchTerm.length < 2) {
+                    // Show all markers
+                    appState.markers.forEach(m => m.marker.addTo(appState.map));
+                    renderLocationCards();
+                    return;
+                }
+                
+                // Filter locations
+                const filteredLocations = locationsData.filter(location => 
+                    location.name.toLowerCase().includes(searchTerm) ||
+                    location.jpName.toLowerCase().includes(searchTerm) ||
+                    location.description.toLowerCase().includes(searchTerm) ||
+                    location.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                );
+                
+                // Update location cards
+                locationsList.innerHTML = '';
+                filteredLocations.forEach(location => {
+                    const card = document.createElement('div');
+                    card.className = 'location-card';
+                    card.setAttribute('data-id', location.id);
+                    
+                    card.innerHTML = `
+                        <h3>${location.name}</h3>
+                        <div class="jp-name">${location.jpName}</div>
+                        <p>${location.description.substring(0, 80)}...</p>
+                        <div class="location-meta">
+                            <div>
+                                ${location.tags.map(tag => `<span class="tag ${tag}">${tag}</span>`).join('')}
+                            </div>
+                            <div>
+                                <i class="far fa-clock"></i> ${location.duration}
+                            </div>
+                        </div>
+                    `;
+                    
+                    card.addEventListener('click', function() {
+                        const id = parseInt(this.getAttribute('data-id'));
+                        showLocationDetails(id);
+                        // Center map on location
+                        const loc = locationsData.find(l => l.id === id);
+                        if (loc) {
+                            appState.map.setView(loc.coordinates, 12);
+                        }
+                    });
+                    
+                    locationsList.appendChild(card);
+                });
+                
+                // Show/hide markers based on search
+                appState.markers.forEach(m => {
+                    const isVisible = filteredLocations.some(l => l.id === m.id);
+                    if (isVisible) {
+                        m.marker.addTo(appState.map);
+                    } else {
+                        appState.map.removeLayer(m.marker);
+                    }
+                });
+                
+                // Update location count
+                locationCountElement.textContent = `${filteredLocations.length} locations`;
+            });
+
+            // Utility panel
+            toggleUtilitiesBtn.addEventListener('click', function() {
+                utilityPanel.classList.toggle('active');
+            });
+
+            closeUtilitiesBtn.addEventListener('click', function() {
+                utilityPanel.classList.remove('active');
+            });
+
+            // JR Pass calculator
+            jrDurationSelect.addEventListener('change', updateJrPassCost);
+
+            // Itinerary controls
+            addDayBtn.addEventListener('click', function() {
+                const dayNumber = appState.itinerary.days.length + 1;
+                appState.itinerary.days.push({
+                    id: dayNumber,
+                    title: `Day ${dayNumber}: New Day`,
+                    items: []
+                });
+                updateItineraryDisplay();
+            });
+
+            calculateCostBtn.addEventListener('click', function() {
+                let totalCost = 0;
+                let totalItems = 0;
+                
+                appState.itinerary.days.forEach(day => {
+                    day.items.forEach(item => {
+                        totalCost += item.cost || 0;
+                        totalItems++;
+                    });
+                });
+                
+                alert(`Itinerary Cost Estimate:\n\nTotal Activities: ${totalItems}\nEstimated Admission Cost: ¥${totalCost.toLocaleString()}\n\nNote: This is an estimate based on admission fees. Transportation, food, and accommodation are not included.`);
+            });
+
+            // Clear day buttons
+            document.querySelectorAll('.clear-day').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dayId = parseInt(this.getAttribute('data-day'));
+                    const day = appState.itinerary.days.find(d => d.id === dayId);
+                    if (day && confirm(`Clear all activities from ${day.title}?`)) {
+                        day.items = [];
+                        updateItineraryDisplay();
+                    }
+                });
+            });
+
+            // Show phrases button
+            document.getElementById('show-phrases')?.addEventListener('click', function() {
+                alert(`Essential Japanese Phrases:\n\n1. Hello - Konnichiwa (こんにちは)\n2. Thank you - Arigatou gozaimasu (ありがとうございます)\n3. Excuse me / Sorry - Sumimasen (すみません)\n4. How much? - Ikura desu ka? (いくらですか)\n5. Where is...? - ...wa doko desu ka? (…はどこですか)\n6. I don't understand - Wakarimasen (わかりません)\n7. Help! - Tasukete! (助けて)\n8. Cheers! - Kanpai! (乾杯)`);
+            });
+
+            // Show etiquette button
+            document.getElementById('show-etiquette')?.addEventListener('click', function() {
+                alert(`Japanese Etiquette Tips:\n\n1. Bowing: Common greeting, deeper bow shows more respect\n2. Shoes: Remove shoes when entering homes, temples, and some restaurants\n3. Chopsticks: Don't stick chopsticks upright in rice (funeral association)\n4. Onsen: Wash thoroughly before entering, no swimsuits, small towel for modesty\n5. Temples/Shrines: Bow before entering, be respectful and quiet\n6. Tipping: Not customary, can be considered rude\n7. Business cards: Accept with both hands, study it before putting away\n8. Public transport: Quiet, no phone calls, priority seats for elderly/pregnant`);
+            });
+        }
+
+        // Reset all filters
+        function resetFilters() {
+            appState.currentFilter = 'all';
+            appState.currentRegion = 'all';
+            
+            // Update filter buttons
+            filterBtns.forEach(btn => {
+                if (btn.getAttribute('data-filter') === 'all') {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            
+            renderLocationCards();
+        }
+
+        // Setup drag and drop for itinerary items
+        function setupItineraryDragAndDrop() {
+            const itineraryContainers = document.querySelectorAll('.itinerary-items');
+            
+            itineraryContainers.forEach(container => {
+                // Allow dropping
+                container.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '#f0f7ff';
+                });
+                
+                container.addEventListener('dragleave', function() {
+                    this.style.backgroundColor = '';
+                });
+                
+                container.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    this.style.backgroundColor = '';
+                    
+                    const data = e.dataTransfer.getData('text/plain');
+                    if (data) {
+                        const itemData = JSON.parse(data);
+                        const dayId = parseInt(this.parentElement.getAttribute('data-day-id'));
+                        
+                        // Add to this day's itinerary
+                        const day = appState.itinerary.days.find(d => d.id === dayId);
+                        if (day && !day.items.some(item => item.id === itemData.id)) {
+                            day.items.push(itemData);
+                            updateItineraryDisplay();
+                        }
+                    }
+                });
+            });
+        }
+
+        // Update itinerary display
+        function updateItineraryDisplay() {
+            // Clear all itinerary item containers
+            document.querySelectorAll('.itinerary-items').forEach(container => {
+                container.innerHTML = '';
+            });
+            
+            // Add items to each day
+            appState.itinerary.days.forEach(day => {
+                const containerId = `day${day.id}-items`;
+                const container = document.getElementById(containerId);
+                
+                if (!container) return;
+                
+                // Add items for this day
+                day.items.forEach((item, index) => {
+                    const itemEl = document.createElement('div');
+                    itemEl.className = 'itinerary-item';
+                    itemEl.draggable = true;
+                    itemEl.setAttribute('data-id', item.id);
+                    
+                    itemEl.innerHTML = `
+                        <div>
+                            <strong>${item.name}</strong>
+                            <div style="font-size: 0.8rem; color: var(--gray);">${item.duration}</div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-btn remove-item" title="Remove">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    // Set drag data
+                    itemEl.addEventListener('dragstart', function(e) {
+                        e.dataTransfer.setData('text/plain', JSON.stringify(item));
+                        this.style.opacity = '0.5';
+                    });
+                    
+                    itemEl.addEventListener('dragend', function() {
+                        this.style.opacity = '1';
+                    });
+                    
+                    // Remove button
+                    const removeBtn = itemEl.querySelector('.remove-item');
+                    removeBtn.addEventListener('click', function() {
+                        day.items.splice(index, 1);
+                        updateItineraryDisplay();
+                    });
+                    
+                    container.appendChild(itemEl);
+                });
+                
+                // If no items, show placeholder
+                if (day.items.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 1rem; color: var(--gray);">
+                            <i class="fas fa-plus-circle"></i>
+                            <div>Drag locations here or click "Add to Itinerary"</div>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Update day headers to show count
+            appState.itinerary.days.forEach(day => {
+                const dayHeader = document.querySelector(`#day${day.id}-items`).parentElement.querySelector('.day-title');
+                const itemCount = day.items.length;
+                dayHeader.textContent = `${day.title} (${itemCount} item${itemCount !== 1 ? 's' : ''})`;
+            });
+        }
+
+        // Add sample itinerary items
+        function addSampleItineraryItems() {
+            // Add sample items to day 1
+            const tokyoLocation = locationsData.find(loc => loc.id === 2); // Tokyo Skytree
+            const shibuyaLocation = locationsData.find(loc => loc.id === 5); // Shibuya Crossing
+            
+            if (tokyoLocation) {
+                appState.itinerary.days[0].items.push({
+                    id: tokyoLocation.id,
+                    name: tokyoLocation.name,
+                    duration: tokyoLocation.duration,
+                    cost: 2500
+                });
+            }
+            
+            if (shibuyaLocation) {
+                appState.itinerary.days[0].items.push({
+                    id: shibuyaLocation.id,
+                    name: shibuyaLocation.name,
+                    duration: shibuyaLocation.duration,
+                    cost: 0
+                });
+            }
+            
+            // Add sample items to day 2
+            const fushimiLocation = locationsData.find(loc => loc.id === 1); // Fushimi Inari
+            const bambooLocation = locationsData.find(loc => loc.id === 3); // Bamboo Grove
+            
+            if (fushimiLocation) {
+                appState.itinerary.days[1].items.push({
+                    id: fushimiLocation.id,
+                    name: fushimiLocation.name,
+                    duration: fushimiLocation.duration,
+                    cost: 0
+                });
+            }
+            
+            if (bambooLocation) {
+                appState.itinerary.days[1].items.push({
+                    id: bambooLocation.id,
+                    name: bambooLocation.name,
+                    duration: bambooLocation.duration,
+                    cost: 0
+                });
+            }
+            
+            updateItineraryDisplay();
+        }
+
+        // Show notification
+        function showNotification(message) {
+            // Remove existing notification
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Create new notification
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                background-color: var(--primary);
+                color: white;
+                padding: 12px 20px;
+                border-radius: var(--border-radius);
+                box-shadow: var(--shadow);
+                z-index: 2000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+            
+            // Add CSS animations
+            if (!document.querySelector('#notification-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-styles';
+                style.textContent = `
+                    @keyframes slideIn {
+                        from { transform: translateX(100%); opacity: 0; }
+                        to { transform: translateX(0); opacity: 1; }
+                    }
+                    @keyframes slideOut {
+                        from { transform: translateX(0); opacity: 1; }
+                        to { transform: translateX(100%); opacity: 0; }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+
+        // Global function for popup button click
+        window.detailPopupClick = function(locationId) {
+            showLocationDetails(locationId);
+        };
+    </script>
+</body>
+</html>
