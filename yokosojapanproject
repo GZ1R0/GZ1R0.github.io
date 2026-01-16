@@ -1,0 +1,2347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Travel App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS for maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Flatpickr for date picker -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        :root {
+            --primary-red: #BC002D;
+            --primary-black: #222222;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #666666;
+            --text-light: #888888;
+            --white: #ffffff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            --japan-blue: #003366;
+            --success-green: #28a745;
+        }
+
+        body {
+            background-color: var(--white);
+            color: var(--primary-black);
+            max-width: 500px;
+            margin: 0 auto;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.05);
+        }
+
+        /* App Container */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            padding: 20px 20px 10px;
+            border-bottom: 1px solid var(--medium-gray);
+            background-color: var(--white);
+            z-index: 10;
+            position: relative;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 20px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--primary-red);
+            cursor: pointer;
+            display: none;
+        }
+
+        .app-title {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary-red);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            font-weight: 500;
+            text-align: center;
+            color: var(--dark-gray);
+            margin-bottom: 5px;
+        }
+
+        /* Screen Container */
+        .screens-container {
+            flex: 1;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .screen {
+            display: none;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            background-color: var(--white);
+            border-top: 1px solid var(--medium-gray);
+            z-index: 100;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            cursor: pointer;
+            color: var(--dark-gray);
+            text-decoration: none;
+            min-width: 60px;
+        }
+
+        .nav-item.active {
+            color: var(--primary-red);
+        }
+
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+
+        .nav-text {
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Screen 1: Home Screen */
+        .home-content {
+            padding: 0;
+        }
+
+        .japan-map-container {
+            height: 220px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .japan-map {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+
+        #interactive-japan-map {
+            width: 100%;
+            height: 100%;
+            border-radius: 0;
+        }
+
+        .map-marker {
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary-red);
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            cursor: pointer;
+            position: relative;
+            box-shadow: 0 0 10px rgba(188, 0, 45, 0.3);
+        }
+
+        .map-marker:after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: var(--white);
+            border-radius: 50%;
+            top: 4px;
+            left: 4px;
+        }
+
+        .marker-label {
+            position: absolute;
+            background-color: var(--white);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--medium-gray);
+            z-index: 100;
+            white-space: nowrap;
+            top: -35px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+        }
+
+        .map-marker:hover .marker-label {
+            display: block;
+        }
+
+        .home-sections {
+            padding: 20px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 15px;
+            color: var(--primary-black);
+        }
+
+        .landmark-card {
+            display: flex;
+            align-items: center;
+            background-color: var(--white);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--medium-gray);
+            transition: transform 0.2s;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .landmark-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--primary-red);
+        }
+
+        .place-icon {
+            background-color: var(--light-gray);
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: var(--primary-red);
+            font-size: 18px;
+        }
+
+        .place-info {
+            flex: 1;
+        }
+
+        .place-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--primary-black);
+        }
+
+        .place-address {
+            font-size: 14px;
+            color: var(--text-light);
+        }
+
+        .place-distance {
+            font-size: 12px;
+            color: var(--primary-red);
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .add-to-trip-btn {
+            background: none;
+            border: none;
+            color: var(--primary-red);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 5px;
+            margin-left: 10px;
+            transition: transform 0.2s;
+        }
+
+        .add-to-trip-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .add-to-trip-btn.added {
+            color: var(--success-green);
+        }
+
+        /* Explore Categories */
+        .explore-categories {
+            margin: 25px 0;
+        }
+
+        .categories-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .category-card {
+            background-color: var(--light-gray);
+            border-radius: 10px;
+            padding: 16px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .category-card:hover {
+            background-color: var(--white);
+            border-color: var(--primary-red);
+            transform: translateY(-2px);
+        }
+
+        .category-icon {
+            font-size: 22px;
+            margin-bottom: 8px;
+            color: var(--primary-red);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--primary-black);
+        }
+
+        /* Screen 2: Search Screen */
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .search-header {
+            margin-bottom: 20px;
+            padding: 20px 20px 0;
+        }
+
+        .search-bar {
+            width: 100%;
+            padding: 16px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 12px;
+            font-size: 16px;
+            color: var(--primary-black);
+            background-color: var(--white);
+            margin-bottom: 15px;
+        }
+
+        .search-bar::placeholder {
+            color: var(--text-light);
+        }
+
+        .location-list {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            padding: 0 20px;
+        }
+
+        .location-item {
+            padding: 16px;
+            border-bottom: 1px solid var(--medium-gray);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .location-item:hover {
+            background-color: var(--light-gray);
+        }
+
+        .location-icon {
+            margin-right: 12px;
+            color: var(--primary-red);
+            width: 24px;
+        }
+
+        .keyboard-container {
+            background-color: var(--light-gray);
+            border-radius: 12px 12px 0 0;
+            padding: 10px;
+            box-shadow: var(--shadow);
+            border-top: 1px solid var(--medium-gray);
+        }
+
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .key {
+            flex: 1;
+            max-width: 36px;
+            height: 44px;
+            margin: 0 3px;
+            background-color: var(--white);
+            border: 1px solid var(--medium-gray);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.1s;
+            user-select: none;
+        }
+
+        .key:hover {
+            background-color: var(--medium-gray);
+        }
+
+        .key.space {
+            max-width: 200px;
+            flex: 3;
+        }
+
+        .key.search {
+            background-color: var(--primary-red);
+            color: var(--white);
+            font-weight: 600;
+        }
+
+        .key.arrow {
+            font-size: 18px;
+        }
+
+        .key.special {
+            font-size: 14px;
+        }
+
+        /* Screen 3: Trip Planning Screen */
+        .trip-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px 20px 0;
+        }
+
+        .trip-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-black);
+        }
+
+        .share-btn {
+            background-color: var(--primary-red);
+            color: var(--white);
+            border: none;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .share-btn i {
+            margin-right: 8px;
+        }
+
+        .trip-section {
+            margin-bottom: 25px;
+            padding: 0 20px;
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary-black);
+        }
+
+        .trip-dates {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        .dates-label {
+            font-weight: 500;
+        }
+
+        .dates-input {
+            border: none;
+            font-size: 16px;
+            color: var(--text-light);
+            width: 60%;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .reservations-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .reservation-category {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 16px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border: 1px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reservation-category:hover {
+            background-color: var(--medium-gray);
+            border-color: var(--primary-red);
+        }
+
+        .reservation-category.active {
+            background-color: var(--primary-red);
+            color: var(--white);
+        }
+
+        .reservation-category.active .category-icon {
+            color: var(--white);
+        }
+
+        .category-icon {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: var(--primary-red);
+        }
+
+        .category-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .notes-area {
+            width: 100%;
+            height: 120px;
+            padding: 16px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            resize: vertical;
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .places-list {
+            min-height: 60px;
+            border: 1px dashed var(--medium-gray);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: border-color 0.2s;
+            margin-bottom: 15px;
+        }
+
+        .places-list:hover {
+            border-color: var(--dark-gray);
+            color: var(--dark-gray);
+        }
+
+        .saved-place-card {
+            background-color: var(--white);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border: 1px solid var(--medium-gray);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .saved-place-name {
+            font-weight: 500;
+        }
+
+        .remove-place-btn {
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Reservation Modal */
+        .reservation-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .reservation-content {
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 25px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .reservation-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-black);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--primary-black);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .form-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--light-gray);
+            color: var(--primary-black);
+        }
+
+        .reservation-list {
+            margin-top: 25px;
+        }
+
+        .reservation-item {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid var(--primary-red);
+        }
+
+        .reservation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .reservation-name {
+            font-weight: 600;
+            color: var(--primary-black);
+        }
+
+        .reservation-type {
+            font-size: 12px;
+            background-color: var(--primary-red);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+
+        .reservation-details {
+            font-size: 14px;
+            color: var(--dark-gray);
+            margin-bottom: 5px;
+        }
+
+        .reservation-date {
+            font-size: 12px;
+            color: var(--text-light);
+        }
+
+        .no-reservations {
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+            padding: 20px;
+        }
+
+        /* Screen 4: Interactive Map */
+        .map-container {
+            height: 100%;
+            position: relative;
+        }
+
+        #full-map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .map-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .map-control-btn {
+            width: 40px;
+            height: 40px;
+            background-color: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: var(--shadow);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: var(--primary-black);
+        }
+
+        .map-legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            z-index: 1000;
+            max-width: 200px;
+        }
+
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .place-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .place-detail-content {
+            background-color: white;
+            width: 90%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-black);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--light-gray);
+            color: var(--primary-black);
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--primary-black);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            z-index: 3000;
+            box-shadow: var(--shadow);
+            display: none;
+            max-width: 300px;
+            text-align: center;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 500px) {
+            .app-title {
+                font-size: 24px;
+            }
+            
+            .key {
+                max-width: 32px;
+                height: 40px;
+                margin: 0 2px;
+                font-size: 15px;
+            }
+            
+            .key.space {
+                max-width: 150px;
+            }
+            
+            .japan-map-container {
+                height: 200px;
+            }
+            
+            .categories-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .reservations-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header with app title -->
+        <div class="header">
+            <button class="back-btn" id="back-btn"><i class="fas fa-arrow-left"></i></button>
+            <h1 class="app-title" id="screen-title">Japan</h1>
+            <div class="subtitle" id="screen-subtitle">Explore landmarks</div>
+        </div>
+
+        <!-- Toast notification -->
+        <div class="toast" id="toast"></div>
+
+        <!-- Place Detail Modal -->
+        <div class="place-detail-modal" id="place-detail-modal">
+            <div class="place-detail-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-place-name">Place Name</h3>
+                    <button class="close-modal" id="close-modal">&times;</button>
+                </div>
+                <div class="place-detail" id="modal-place-detail">
+                    <!-- Place details will be inserted here -->
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn btn-secondary" id="modal-cancel-btn">Cancel</button>
+                    <button class="modal-btn btn-primary" id="modal-add-btn">Add to Trip</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Reservation Modal -->
+        <div class="reservation-modal" id="reservation-modal">
+            <div class="reservation-content">
+                <h3 class="reservation-title" id="reservation-modal-title">Add Reservation</h3>
+                <form id="reservation-form">
+                    <div id="reservation-form-content">
+                        <!-- Form fields will be dynamically inserted here -->
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" class="form-btn btn-secondary" id="cancel-reservation-btn">Cancel</button>
+                        <button type="submit" class="form-btn btn-primary" id="save-reservation-btn">Save</button>
+                    </div>
+                </form>
+                
+                <div class="reservation-list" id="existing-reservations">
+                    <!-- Existing reservations will appear here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content area -->
+        <div class="screens-container" id="screens-container">
+            <!-- Screen 1: Home -->
+            <div class="screen active" id="home-screen">
+                <div class="home-content">
+                    <!-- Japan Map Section -->
+                    <div class="japan-map-container">
+                        <div id="interactive-japan-map"></div>
+                    </div>
+                    
+                    <div class="home-sections">
+                        <!-- Explore Categories -->
+                        <div class="explore-categories">
+                            <h2 class="section-title">Explore Japan</h2>
+                            <div class="categories-grid">
+                                <div class="category-card" data-category="temples">
+                                    <div class="category-icon"><i class="fas fa-torii-gate"></i></div>
+                                    <div class="category-name">Temples</div>
+                                </div>
+                                <div class="category-card" data-category="food">
+                                    <div class="category-icon"><i class="fas fa-utensils"></i></div>
+                                    <div class="category-name">Food</div>
+                                </div>
+                                <div class="category-card" data-category="nature">
+                                    <div class="category-icon"><i class="fas fa-mountain"></i></div>
+                                    <div class="category-name">Nature</div>
+                                </div>
+                                <div class="category-card" data-category="culture">
+                                    <div class="category-icon"><i class="fas fa-landmark"></i></div>
+                                    <div class="category-name">Culture</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Top Trending Places -->
+                        <div class="trending-section">
+                            <h2 class="section-title">Top trending places</h2>
+                            <div id="trending-places">
+                                <!-- Landmark cards will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 2: Search -->
+            <div class="screen" id="search-screen">
+                <div class="search-container">
+                    <div class="search-header">
+                        <input type="text" class="search-bar" id="search-input" placeholder="Search...">
+                    </div>
+                    
+                    <div class="location-list" id="location-list">
+                        <!-- Location items will be added here dynamically -->
+                    </div>
+                    
+                    <div class="keyboard-container">
+                        <!-- Keyboard rows -->
+                        <div class="keyboard-row">
+                            <div class="key" data-key="q">q</div>
+                            <div class="key" data-key="w">w</div>
+                            <div class="key" data-key="e">e</div>
+                            <div class="key" data-key="r">r</div>
+                            <div class="key" data-key="t">t</div>
+                            <div class="key" data-key="y">y</div>
+                            <div class="key" data-key="u">u</div>
+                            <div class="key" data-key="i">i</div>
+                            <div class="key" data-key="o">o</div>
+                            <div class="key" data-key="p">p</div>
+                        </div>
+                        
+                        <div class="keyboard-row">
+                            <div class="key arrow" data-key="left">⇦</div>
+                            <div class="key" data-key="a">a</div>
+                            <div class="key" data-key="s">s</div>
+                            <div class="key" data-key="d">d</div>
+                            <div class="key" data-key="f">f</div>
+                            <div class="key" data-key="g">g</div>
+                            <div class="key" data-key="h">h</div>
+                            <div class="key" data-key="j">j</div>
+                            <div class="key" data-key="k">k</div>
+                            <div class="key" data-key="l">l</div>
+                            <div class="key arrow" data-key="right">⇨</div>
+                        </div>
+                        
+                        <div class="keyboard-row">
+                            <div class="key special" data-key="123">123</div>
+                            <div class="key" data-key="z">z</div>
+                            <div class="key" data-key="x">x</div>
+                            <div class="key" data-key="c">c</div>
+                            <div class="key" data-key="v">v</div>
+                            <div class="key" data-key="b">b</div>
+                            <div class="key" data-key="n">n</div>
+                            <div class="key" data-key="m">m</div>
+                            <div class="key space" data-key=" ">space</div>
+                            <div class="key search" data-key="search">search</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 3: Trip Planning -->
+            <div class="screen" id="trip-screen">
+                <div class="trip-header">
+                    <h2 class="trip-title"># Trip to Japan</h2>
+                    <button class="share-btn" id="share-trip-btn">
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+                
+                <div class="trip-section">
+                    <h3 class="section-header">Overview</h3>
+                    <div class="trip-dates">
+                        <span class="dates-label">Trip Dates</span>
+                        <input type="text" class="dates-input" id="trip-dates" placeholder="Select dates" readonly>
+                    </div>
+                </div>
+                
+                <div class="trip-section">
+                    <h3 class="section-header">Reservations and attachments</h3>
+                    <div class="reservations-grid">
+                        <div class="reservation-category" data-category="flights" data-active="false">
+                            <div class="category-icon"><i class="fas fa-plane"></i></div>
+                            <div class="category-name">Flights</div>
+                        </div>
+                        <div class="reservation-category" data-category="lodging" data-active="false">
+                            <div class="category-icon"><i class="fas fa-hotel"></i></div>
+                            <div class="category-name">Lodging</div>
+                        </div>
+                        <div class="reservation-category" data-category="car" data-active="false">
+                            <div class="category-icon"><i class="fas fa-car"></i></div>
+                            <div class="category-name">Rental car</div>
+                        </div>
+                        <div class="reservation-category" data-category="restaurant" data-active="false">
+                            <div class="category-icon"><i class="fas fa-utensils"></i></div>
+                            <div class="category-name">Restaurant</div>
+                        </div>
+                        <div class="reservation-category" data-category="attachment" data-active="false">
+                            <div class="category-icon"><i class="fas fa-paperclip"></i></div>
+                            <div class="category-name">Attachment</div>
+                        </div>
+                        <div class="reservation-category" data-category="other" data-active="false">
+                            <div class="category-icon"><i class="fas fa-ellipsis-h"></i></div>
+                            <div class="category-name">Other</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="trip-section">
+                    <h3 class="section-header">Notes</h3>
+                    <textarea class="notes-area" id="trip-notes" placeholder="Write or paste general notes here, e.g. how to get around, local tips, reminders"></textarea>
+                </div>
+                
+                <div class="trip-section">
+                    <h3 class="section-header">Places to Visit</h3>
+                    <div class="places-list" id="add-place-btn">
+                        - Add a place
+                    </div>
+                    <div id="places-list-container">
+                        <!-- Saved places will appear here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Screen 4: Interactive Map -->
+            <div class="screen" id="map-screen">
+                <div class="map-container">
+                    <div id="full-map"></div>
+                    <div class="map-controls">
+                        <button class="map-control-btn" id="locate-btn" title="Locate me">
+                            <i class="fas fa-location-arrow"></i>
+                        </button>
+                        <button class="map-control-btn" id="zoom-in-btn" title="Zoom in">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        <button class="map-control-btn" id="zoom-out-btn" title="Zoom out">
+                            <i class="fas fa-minus"></i>
+                        </button>
+                    </div>
+                    <div class="map-legend">
+                        <div class="legend-title">Legend</div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #BC002D;"></div>
+                            <span>Popular Attractions</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #003366;"></div>
+                            <span>Saved Places</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color" style="background-color: #28a745;"></div>
+                            <span>Trip Destinations</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom navigation -->
+        <div class="bottom-nav">
+            <a class="nav-item active" data-screen="home">
+                <div class="nav-icon"><i class="fas fa-home"></i></div>
+                <div class="nav-text">Home</div>
+            </a>
+            <a class="nav-item" data-screen="search">
+                <div class="nav-icon"><i class="fas fa-search"></i></div>
+                <div class="nav-text">Search</div>
+            </a>
+            <a class="nav-item" data-screen="trip">
+                <div class="nav-icon"><i class="fas fa-map-marked-alt"></i></div>
+                <div class="nav-text">Trip</div>
+            </a>
+            <a class="nav-item" data-screen="map">
+                <div class="nav-icon"><i class="fas fa-map"></i></div>
+                <div class="nav-text">Map</div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Leaflet JS for maps -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Flatpickr for date picker -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
+    <script>
+        // App state
+        const appState = {
+            currentScreen: 'home',
+            tripPlaces: JSON.parse(localStorage.getItem('tripPlaces')) || [],
+            userLocation: null,
+            homeMap: null,
+            fullMap: null,
+            reservations: JSON.parse(localStorage.getItem('reservations')) || [],
+            currentReservationType: null,
+            trendingPlaces: [
+                { 
+                    id: 1, 
+                    name: 'Dotonbori', 
+                    address: '1-7-21 Dotonbori, Chuo-ku, Osaka', 
+                    distance: '3.2 km away', 
+                    icon: 'fas fa-utensils', 
+                    region: 'Osaka',
+                    lat: 34.6697,
+                    lng: 135.5022,
+                    description: 'Famous entertainment district known for its neon lights, extravagant signage, and delicious street food.',
+                    category: 'food'
+                },
+                { 
+                    id: 2, 
+                    name: 'Senso-ji Temple', 
+                    address: '2-3-1 Asakusa, Taito-ku, Tokyo', 
+                    distance: '1.5 km away', 
+                    icon: 'fas fa-torii-gate', 
+                    region: 'Tokyo',
+                    lat: 35.7148,
+                    lng: 139.7967,
+                    description: 'Tokyo\'s oldest temple, dating back to 645 AD. A must-visit for cultural and historical experiences.',
+                    category: 'temples'
+                },
+                { 
+                    id: 3, 
+                    name: 'Fushimi Inari Shrine', 
+                    address: '68 Fukakusa Yabunouchicho, Kyoto', 
+                    distance: '5.7 km away', 
+                    icon: 'fas fa-torii-gate', 
+                    region: 'Kyoto',
+                    lat: 34.9671,
+                    lng: 135.7727,
+                    description: 'Famous for its thousands of vermilion torii gates that lead up Mount Inari.',
+                    category: 'temples'
+                },
+                { 
+                    id: 4, 
+                    name: 'Mount Fuji', 
+                    address: 'Kitayama, Fujinomiya, Shizuoka', 
+                    distance: '85 km away', 
+                    icon: 'fas fa-mountain', 
+                    region: 'Shizuoka',
+                    lat: 35.3606,
+                    lng: 138.7274,
+                    description: 'Japan\'s highest mountain and an active volcano, also a UNESCO World Heritage site.',
+                    category: 'nature'
+                }
+            ],
+            searchLocations: [
+                { id: 1, name: 'Use current location', icon: 'fas fa-location-arrow', lat: null, lng: null },
+                { id: 2, name: 'Kanazawa', icon: 'fas fa-map-marker-alt', lat: 36.5613, lng: 136.6562 },
+                { id: 3, name: 'Tokyo', icon: 'fas fa-map-marker-alt', lat: 35.6762, lng: 139.6503 },
+                { id: 4, name: 'Yakushima Island', icon: 'fas fa-map-marker-alt', lat: 30.3589, lng: 130.5297 },
+                { id: 5, name: 'Kamakura', icon: 'fas fa-map-marker-alt', lat: 35.3192, lng: 139.5467 },
+                { id: 6, name: 'Osaka', icon: 'fas fa-map-marker-alt', lat: 34.6937, lng: 135.5023 },
+                { id: 7, name: 'Kyoto', icon: 'fas fa-map-marker-alt', lat: 35.0116, lng: 135.7681 },
+                { id: 8, name: 'Hiroshima', icon: 'fas fa-map-marker-alt', lat: 34.3853, lng: 132.4553 },
+                { id: 9, name: 'Nara', icon: 'fas fa-map-marker-alt', lat: 34.6851, lng: 135.8048 },
+                { id: 10, name: 'Sapporo', icon: 'fas fa-map-marker-alt', lat: 43.0618, lng: 141.3545 }
+            ]
+        };
+
+        // DOM Elements
+        const screens = {
+            home: document.getElementById('home-screen'),
+            search: document.getElementById('search-screen'),
+            trip: document.getElementById('trip-screen'),
+            map: document.getElementById('map-screen')
+        };
+
+        const navItems = document.querySelectorAll('.nav-item');
+        const screenTitle = document.getElementById('screen-title');
+        const screenSubtitle = document.getElementById('screen-subtitle');
+        const backBtn = document.getElementById('back-btn');
+        const toast = document.getElementById('toast');
+        const reservationModal = document.getElementById('reservation-modal');
+        const reservationForm = document.getElementById('reservation-form');
+        const reservationFormContent = document.getElementById('reservation-form-content');
+        const reservationModalTitle = document.getElementById('reservation-modal-title');
+        const existingReservations = document.getElementById('existing-reservations');
+
+        // Initialize the app
+        function initApp() {
+            // Set up navigation
+            setupNavigation();
+            
+            // Initialize screens
+            initHomeScreen();
+            initSearchScreen();
+            initTripScreen();
+            initMapScreen();
+            
+            // Show the home screen by default
+            switchScreen('home');
+            
+            // Initialize date picker
+            initDatePicker();
+            
+            // Try to get user location
+            getUserLocation();
+            
+            // Load saved reservations
+            renderExistingReservations();
+        }
+
+        // Show toast message
+        function showToast(message, duration = 2000) {
+            toast.textContent = message;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, duration);
+        }
+
+        // Navigation setup
+        function setupNavigation() {
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const screen = this.getAttribute('data-screen');
+                    switchScreen(screen);
+                });
+            });
+
+            backBtn.addEventListener('click', function() {
+                // Go back to home screen from any screen
+                switchScreen('home');
+            });
+        }
+
+        // Switch between screens
+        function switchScreen(screenName) {
+            // Update current screen
+            appState.currentScreen = screenName;
+            
+            // Hide all screens
+            Object.values(screens).forEach(screen => {
+                screen.classList.remove('active');
+            });
+            
+            // Show the selected screen
+            screens[screenName].classList.add('active');
+            
+            // Update navigation items
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('data-screen') === screenName) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // Show/hide back button
+            if (screenName === 'home') {
+                backBtn.style.display = 'none';
+            } else {
+                backBtn.style.display = 'block';
+            }
+            
+            // Update header based on screen
+            updateHeader(screenName);
+            
+            // Screen-specific initialization
+            if (screenName === 'home') {
+                renderTrendingPlaces();
+                initHomeMap();
+            } else if (screenName === 'search') {
+                renderLocationList();
+                document.getElementById('search-input').focus();
+            } else if (screenName === 'trip') {
+                renderTripPlaces();
+                updateReservationCategories();
+            } else if (screenName === 'map') {
+                initFullMap();
+            }
+        }
+
+        // Update header based on current screen
+        function updateHeader(screenName) {
+            const titles = {
+                home: { main: 'Japan', subtitle: 'Explore landmarks' },
+                search: { main: 'Search', subtitle: 'Find locations in Japan' },
+                trip: { main: 'Trip to Japan', subtitle: 'Plan your itinerary' },
+                map: { main: 'Interactive Map', subtitle: 'Explore Japan' }
+            };
+            
+            screenTitle.textContent = titles[screenName].main;
+            screenSubtitle.textContent = titles[screenName].subtitle;
+        }
+
+        // Get user location
+        function getUserLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        appState.userLocation = {
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        };
+                        console.log('User location:', appState.userLocation);
+                    },
+                    (error) => {
+                        console.log('Error getting location:', error);
+                    }
+                );
+            }
+        }
+
+        // Screen 1: Home Screen
+        function initHomeScreen() {
+            renderTrendingPlaces();
+            
+            // Add click handlers to category cards
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const category = this.getAttribute('data-category');
+                    filterPlacesByCategory(category);
+                });
+            });
+        }
+
+        function initHomeMap() {
+            if (appState.homeMap) {
+                appState.homeMap.remove();
+            }
+            
+            // Initialize Leaflet map for home screen
+            appState.homeMap = L.map('interactive-japan-map').setView([36.2048, 138.2529], 5);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 8,
+                minZoom: 4
+            }).addTo(appState.homeMap);
+            
+            // Disable dragging and zoom on home screen map
+            appState.homeMap.dragging.disable();
+            appState.homeMap.touchZoom.disable();
+            appState.homeMap.doubleClickZoom.disable();
+            appState.homeMap.scrollWheelZoom.disable();
+            appState.homeMap.boxZoom.disable();
+            appState.homeMap.keyboard.disable();
+            
+            // Add markers for trending places
+            appState.trendingPlaces.forEach(place => {
+                const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
+                const markerColor = isInTrip ? '#28a745' : '#BC002D';
+                
+                const marker = L.marker([place.lat, place.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div class="map-marker" style="background-color: ${markerColor};">
+                                 <div class="marker-label">${place.name}</div>
+                               </div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 24]
+                    })
+                }).addTo(appState.homeMap);
+                
+                marker.on('click', () => {
+                    showPlaceDetailModal(place);
+                });
+            });
+setTimeout(() => {
+    appState.homeMap.invalidateSize();
+}, 0);
+
+        }
+
+        function renderTrendingPlaces() {
+            const container = document.getElementById('trending-places');
+            container.innerHTML = '';
+            
+            appState.trendingPlaces.forEach(place => {
+                const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
+                const card = document.createElement('div');
+                card.className = 'landmark-card';
+                card.setAttribute('data-id', place.id);
+                card.innerHTML = `
+                    <div class="place-icon">
+                        <i class="${place.icon}"></i>
+                    </div>
+                    <div class="place-info">
+                        <div class="place-name">${place.name}</div>
+                        <div class="place-address">${place.address}</div>
+                        <div class="place-distance">${place.distance}</div>
+                    </div>
+                    <button class="add-to-trip-btn ${isInTrip ? 'added' : ''}" data-id="${place.id}">
+                        <i class="fas ${isInTrip ? 'fa-check' : 'fa-plus'}"></i>
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+            
+            // Add event listeners to add-to-trip buttons
+            document.querySelectorAll('.add-to-trip-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const placeId = parseInt(this.getAttribute('data-id'));
+                    const place = appState.trendingPlaces.find(p => p.id === placeId);
+                    if (place) {
+                        togglePlaceInTrip(place);
+                        renderTrendingPlaces(); // Refresh to update button state
+                    }
+                });
+            });
+            
+            // Add click handlers to landmark cards
+            document.querySelectorAll('.landmark-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const placeId = parseInt(this.getAttribute('data-id'));
+                    const place = appState.trendingPlaces.find(p => p.id === placeId);
+                    if (place) {
+                        showPlaceDetailModal(place);
+                    }
+                });
+            });
+        }
+
+        function filterPlacesByCategory(category) {
+            const filteredPlaces = appState.trendingPlaces.filter(place => 
+                place.category === category
+            );
+            
+            if (filteredPlaces.length > 0) {
+                const container = document.getElementById('trending-places');
+                container.innerHTML = '<h2 class="section-title">' + category.charAt(0).toUpperCase() + category.slice(1) + ' Places</h2>';
+                
+                filteredPlaces.forEach(place => {
+                    const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
+                    const card = document.createElement('div');
+                    card.className = 'landmark-card';
+                    card.setAttribute('data-id', place.id);
+                    card.innerHTML = `
+                        <div class="place-icon">
+                            <i class="${place.icon}"></i>
+                        </div>
+                        <div class="place-info">
+                            <div class="place-name">${place.name}</div>
+                            <div class="place-address">${place.address}</div>
+                            <div class="place-distance">${place.distance}</div>
+                        </div>
+                        <button class="add-to-trip-btn ${isInTrip ? 'added' : ''}" data-id="${place.id}">
+                            <i class="fas ${isInTrip ? 'fa-check' : 'fa-plus'}"></i>
+                        </button>
+                    `;
+                    container.appendChild(card);
+                });
+                
+                showToast(`Showing ${category} places`);
+            }
+        }
+
+        // Screen 2: Search Screen
+        function initSearchScreen() {
+            const searchInput = document.getElementById('search-input');
+            
+            searchInput.addEventListener('input', function() {
+                filterLocations(this.value);
+            });
+            
+            setupKeyboard();
+        }
+
+        function renderLocationList(filter = '') {
+            const container = document.getElementById('location-list');
+            container.innerHTML = '';
+            
+            const filteredLocations = appState.searchLocations.filter(location =>
+                location.name.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            filteredLocations.forEach(location => {
+                const item = document.createElement('div');
+                item.className = 'location-item';
+                item.setAttribute('data-name', location.name);
+                item.innerHTML = `
+                    <i class="${location.icon} location-icon"></i>
+                    ${location.name}
+                `;
+                container.appendChild(item);
+                
+                item.addEventListener('click', () => {
+                    if (location.name === 'Use current location') {
+                        if (appState.userLocation) {
+                            showToast('Using your current location');
+                            // Center map on user location
+                            switchScreen('map');
+                            setTimeout(() => {
+                                appState.fullMap.setView([appState.userLocation.lat, appState.userLocation.lng], 12);
+                            }, 100);
+                        } else {
+                            showToast('Unable to get your location');
+                        }
+                    } else {
+                        showToast(`Searching for ${location.name}...`);
+                        switchScreen('map');
+                        setTimeout(() => {
+                            if (location.lat && location.lng) {
+                                appState.fullMap.setView([location.lat, location.lng], 10);
+                            }
+                        }, 100);
+                    }
+                });
+            });
+        }
+
+        function filterLocations(searchTerm) {
+            renderLocationList(searchTerm);
+        }
+
+        function setupKeyboard() {
+            const searchInput = document.getElementById('search-input');
+            
+            document.querySelectorAll('.key').forEach(key => {
+                key.addEventListener('click', function() {
+                    const keyValue = this.getAttribute('data-key');
+                    
+                    if (keyValue === 'search') {
+                        if (searchInput.value.trim()) {
+                            showToast(`Searching for "${searchInput.value}"...`);
+                        }
+                    } else if (keyValue === ' ') {
+                        searchInput.value += ' ';
+                    } else if (keyValue === 'left') {
+                        const cursorPos = searchInput.selectionStart;
+                        searchInput.setSelectionRange(cursorPos - 1, cursorPos - 1);
+                    } else if (keyValue === 'right') {
+                        const cursorPos = searchInput.selectionStart;
+                        searchInput.setSelectionRange(cursorPos + 1, cursorPos + 1);
+                    } else if (keyValue === '123') {
+                        showToast('Number keyboard would appear here');
+                    } else {
+                        searchInput.value += keyValue;
+                    }
+                    
+                    // Trigger input event to filter locations
+                    searchInput.dispatchEvent(new Event('input'));
+                    searchInput.focus();
+                });
+            });
+        }
+
+        // Screen 3: Trip Planning Screen
+        function initTripScreen() {
+            // Add place button
+            document.getElementById('add-place-btn').addEventListener('click', function() {
+                switchScreen('search');
+                showToast('Search for places to add to your trip');
+            });
+            
+            // Share trip button
+            document.getElementById('share-trip-btn').addEventListener('click', function() {
+                const tripData = {
+                    places: appState.tripPlaces,
+                    notes: document.getElementById('trip-notes').value,
+                    dates: document.getElementById('trip-dates').value,
+                    reservations: appState.reservations
+                };
+                
+                // In a real app, this would share the trip data
+                // For demo, we'll just show a toast
+                showToast('Trip shared successfully! A link has been copied to your clipboard.');
+                
+                // Copy trip summary to clipboard
+                const tripSummary = `My Japan Trip:\n\nPlaces to visit:\n${appState.tripPlaces.map(p => `- ${p.name}`).join('\n')}\n\nReservations:\n${appState.reservations.map(r => `- ${r.name} (${r.type})`).join('\n')}\n\nNotes: ${tripData.notes}\nDates: ${tripData.dates}`;
+                navigator.clipboard.writeText(tripSummary).catch(err => {
+                    console.log('Failed to copy: ', err);
+                });
+            });
+            
+            // Reservation categories
+            document.querySelectorAll('.reservation-category').forEach(category => {
+                category.addEventListener('click', function() {
+                    const categoryType = this.getAttribute('data-category');
+                    openReservationModal(categoryType);
+                });
+            });
+            
+            // Cancel reservation button
+            document.getElementById('cancel-reservation-btn').addEventListener('click', function() {
+                reservationModal.style.display = 'none';
+            });
+            
+            // Save reservation button
+            reservationForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                saveReservation();
+            });
+            
+            // Load trip notes from localStorage
+            const savedNotes = localStorage.getItem('tripNotes');
+            if (savedNotes) {
+                document.getElementById('trip-notes').value = savedNotes;
+            }
+            
+            // Save trip notes when changed
+            document.getElementById('trip-notes').addEventListener('input', function() {
+                localStorage.setItem('tripNotes', this.value);
+            });
+        }
+
+        function initDatePicker() {
+            flatpickr("#trip-dates", {
+                mode: "range",
+                dateFormat: "M j, Y",
+                minDate: "today",
+                onChange: function(selectedDates, dateStr, instance) {
+                    if (dateStr) {
+                        document.getElementById('trip-dates').style.color = 'var(--primary-black)';
+                        localStorage.setItem('tripDates', dateStr);
+                        showToast('Trip dates updated');
+                    }
+                }
+            });
+            
+            // Load saved dates
+            const savedDates = localStorage.getItem('tripDates');
+            if (savedDates) {
+                document.getElementById('trip-dates').value = savedDates;
+                document.getElementById('trip-dates').style.color = 'var(--primary-black)';
+            }
+        }
+
+        function renderTripPlaces() {
+            const container = document.getElementById('places-list-container');
+            container.innerHTML = '';
+            
+            if (appState.tripPlaces.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'no-reservations';
+                emptyMessage.textContent = 'No places added yet. Click "Add a place" to start planning.';
+                container.appendChild(emptyMessage);
+                return;
+            }
+            
+            appState.tripPlaces.forEach((place, index) => {
+                const placeElement = document.createElement('div');
+                placeElement.className = 'saved-place-card';
+                placeElement.innerHTML = `
+                    <div>
+                        <div class="saved-place-name">${place.name}</div>
+                        <div style="font-size: 12px; color: var(--text-light);">${place.address}</div>
+                    </div>
+                    <button class="remove-place-btn" data-index="${index}">
+                        <i class="fas fa-times"></i>
+                    </button>
+                `;
+                container.appendChild(placeElement);
+            });
+            
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-place-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removePlaceFromTrip(index);
+                });
+            });
+        }
+
+        function togglePlaceInTrip(place) {
+            const index = appState.tripPlaces.findIndex(p => p.id === place.id);
+            
+            if (index === -1) {
+                // Add to trip
+                appState.tripPlaces.push(place);
+                showToast(`Added ${place.name} to your trip!`);
+            } else {
+                // Remove from trip
+                appState.tripPlaces.splice(index, 1);
+                showToast(`Removed ${place.name} from your trip`);
+            }
+            
+            // Save to localStorage
+            localStorage.setItem('tripPlaces', JSON.stringify(appState.tripPlaces));
+            
+            // Refresh trip screen if it's active
+            if (appState.currentScreen === 'trip') {
+                renderTripPlaces();
+            }
+            
+            // Refresh home map to update markers
+            if (appState.homeMap) {
+                initHomeMap();
+            }
+            
+            // Update reservation categories
+            updateReservationCategories();
+        }
+
+        function removePlaceFromTrip(index) {
+            const place = appState.tripPlaces[index];
+            appState.tripPlaces.splice(index, 1);
+            
+            // Save to localStorage
+            localStorage.setItem('tripPlaces', JSON.stringify(appState.tripPlaces));
+            
+            // Refresh displays
+            renderTripPlaces();
+            renderTrendingPlaces();
+            showToast(`Removed ${place.name} from your trip`);
+            
+            // Refresh home map
+            if (appState.homeMap) {
+                initHomeMap();
+            }
+            
+            // Update reservation categories
+            updateReservationCategories();
+        }
+
+        // Reservation Management
+        function openReservationModal(type) {
+            appState.currentReservationType = type;
+            
+            // Update modal title
+            const typeNames = {
+                flights: 'Flight Reservation',
+                lodging: 'Lodging Reservation',
+                car: 'Rental Car Reservation',
+                restaurant: 'Restaurant Reservation',
+                attachment: 'Add Attachment',
+                other: 'Other Reservation'
+            };
+            
+            reservationModalTitle.textContent = typeNames[type] || 'Add Reservation';
+            
+            // Clear previous form content
+            reservationFormContent.innerHTML = '';
+            
+            // Create form based on reservation type
+            let formHTML = '';
+            
+            switch(type) {
+                case 'flights':
+                    formHTML = `
+                        <div class="form-group">
+                            <label class="form-label">Airline</label>
+                            <input type="text" class="form-input" id="airline" placeholder="e.g., Japan Airlines" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Flight Number</label>
+                            <input type="text" class="form-input" id="flight-number" placeholder="e.g., JL123" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">From</label>
+                                <input type="text" class="form-input" id="from" placeholder="Departure city" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">To</label>
+                                <input type="text" class="form-input" id="to" placeholder="Arrival city" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Departure Date</label>
+                                <input type="date" class="form-input" id="departure-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Departure Time</label>
+                                <input type="time" class="form-input" id="departure-time" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmation Number</label>
+                            <input type="text" class="form-input" id="confirmation" placeholder="Booking reference">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'lodging':
+                    formHTML = `
+                        <div class="form-group">
+                            <label class="form-label">Hotel Name</label>
+                            <input type="text" class="form-input" id="hotel-name" placeholder="e.g., Park Hotel Tokyo" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-input" id="hotel-address" placeholder="Hotel address" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Check-in Date</label>
+                                <input type="date" class="form-input" id="checkin-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Check-out Date</label>
+                                <input type="date" class="form-input" id="checkout-date" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Room Type</label>
+                            <input type="text" class="form-input" id="room-type" placeholder="e.g., Deluxe Twin">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmation Number</label>
+                            <input type="text" class="form-input" id="lodging-confirmation" placeholder="Booking reference">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'car':
+                    formHTML = `
+                        <div class="form-group">
+                            <label class="form-label">Rental Company</label>
+                            <input type="text" class="form-input" id="company" placeholder="e.g., Toyota Rent-a-Car" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Car Type</label>
+                            <input type="text" class="form-input" id="car-type" placeholder="e.g., Toyota Prius" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Pick-up Date</label>
+                                <input type="date" class="form-input" id="pickup-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Drop-off Date</label>
+                                <input type="date" class="form-input" id="dropoff-date" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pick-up Location</label>
+                            <input type="text" class="form-input" id="pickup-location" placeholder="e.g., Narita Airport" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmation Number</label>
+                            <input type="text" class="form-input" id="car-confirmation" placeholder="Booking reference">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'restaurant':
+                    formHTML = `
+                        <div class="form-group">
+                            <label class="form-label">Restaurant Name</label>
+                            <input type="text" class="form-input" id="restaurant-name" placeholder="e.g., Sukiyabashi Jiro" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-input" id="restaurant-address" placeholder="Restaurant address" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Reservation Date</label>
+                                <input type="date" class="form-input" id="reservation-date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Reservation Time</label>
+                                <input type="time" class="form-input" id="reservation-time" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Number of Guests</label>
+                            <input type="number" class="form-input" id="guests" placeholder="e.g., 2" min="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmation Number</label>
+                            <input type="text" class="form-input" id="restaurant-confirmation" placeholder="Booking reference">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'attachment':
+                    formHTML = `
+                        <div class="form-group">
+                            <label class="form-label">Attachment Name</label>
+                            <input type="text" class="form-input" id="attachment-name" placeholder="e.g., Travel Insurance" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input" id="attachment-description" placeholder="Description of the attachment" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">File Upload (simulated)</label>
+                            <input type="text" class="form-input" id="attachment-file" placeholder="Click to upload file" readonly>
+                            <button type="button" class="form-btn btn-secondary" style="margin-top: 8px; padding: 8px;" onclick="simulateFileUpload()">Choose File</button>
+                        </div>
+                    `;
+                    break;
+                    
+                case 'other':
+                default:
+                    formHTML = `
+                        <div class="form-group">
+                            <label class="form-label">Reservation Name</label>
+                            <input type="text" class="form-input" id="other-name" placeholder="e.g., Museum Tickets" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-input" id="other-description" placeholder="Details about the reservation" rows="3" required></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Date</label>
+                                <input type="date" class="form-input" id="other-date">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Time</label>
+                                <input type="time" class="form-input" id="other-time">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmation Number</label>
+                            <input type="text" class="form-input" id="other-confirmation" placeholder="Booking reference">
+                        </div>
+                    `;
+            }
+            
+            reservationFormContent.innerHTML = formHTML;
+            reservationModal.style.display = 'flex';
+            
+            // Show existing reservations for this type
+            renderExistingReservations(type);
+        }
+
+        function simulateFileUpload() {
+            const fileInput = document.getElementById('attachment-file');
+            const fileName = `travel_document_${Math.floor(Math.random() * 1000)}.pdf`;
+            fileInput.value = fileName;
+            showToast('File selected: ' + fileName);
+        }
+
+        function saveReservation() {
+            const type = appState.currentReservationType;
+            let reservationData = {
+                id: Date.now(),
+                type: type,
+                dateAdded: new Date().toLocaleDateString()
+            };
+            
+            // Collect data based on reservation type
+            switch(type) {
+                case 'flights':
+                    reservationData.name = document.getElementById('airline').value;
+                    reservationData.details = `Flight ${document.getElementById('flight-number').value} from ${document.getElementById('from').value} to ${document.getElementById('to').value}`;
+                    reservationData.date = document.getElementById('departure-date').value;
+                    reservationData.time = document.getElementById('departure-time').value;
+                    reservationData.confirmation = document.getElementById('confirmation').value;
+                    break;
+                    
+                case 'lodging':
+                    reservationData.name = document.getElementById('hotel-name').value;
+                    reservationData.details = `Check-in: ${document.getElementById('checkin-date').value}, Check-out: ${document.getElementById('checkout-date').value}`;
+                    reservationData.address = document.getElementById('hotel-address').value;
+                    reservationData.confirmation = document.getElementById('lodging-confirmation').value;
+                    break;
+                    
+                case 'car':
+                    reservationData.name = document.getElementById('company').value;
+                    reservationData.details = `${document.getElementById('car-type').value} at ${document.getElementById('pickup-location').value}`;
+                    reservationData.date = document.getElementById('pickup-date').value;
+                    reservationData.endDate = document.getElementById('dropoff-date').value;
+                    reservationData.confirmation = document.getElementById('car-confirmation').value;
+                    break;
+                    
+                case 'restaurant':
+                    reservationData.name = document.getElementById('restaurant-name').value;
+                    reservationData.details = `${document.getElementById('guests').value} guests at ${document.getElementById('reservation-time').value}`;
+                    reservationData.date = document.getElementById('reservation-date').value;
+                    reservationData.address = document.getElementById('restaurant-address').value;
+                    reservationData.confirmation = document.getElementById('restaurant-confirmation').value;
+                    break;
+                    
+                case 'attachment':
+                    reservationData.name = document.getElementById('attachment-name').value;
+                    reservationData.details = document.getElementById('attachment-description').value;
+                    reservationData.file = document.getElementById('attachment-file').value;
+                    break;
+                    
+                case 'other':
+                default:
+                    reservationData.name = document.getElementById('other-name').value;
+                    reservationData.details = document.getElementById('other-description').value;
+                    reservationData.date = document.getElementById('other-date').value;
+                    reservationData.time = document.getElementById('other-time').value;
+                    reservationData.confirmation = document.getElementById('other-confirmation').value;
+            }
+            
+            // Add to reservations array
+            appState.reservations.push(reservationData);
+            
+            // Save to localStorage
+            localStorage.setItem('reservations', JSON.stringify(appState.reservations));
+            
+            // Close modal
+            reservationModal.style.display = 'none';
+            
+            // Show success message
+            showToast(`${typeNames[type] || 'Reservation'} added successfully!`);
+            
+            // Update reservation categories
+            updateReservationCategories();
+            
+            // Clear form
+            reservationForm.reset();
+        }
+
+        function renderExistingReservations(filterType = null) {
+            existingReservations.innerHTML = '';
+            
+            // Filter reservations if a type is specified
+            const filteredReservations = filterType 
+                ? appState.reservations.filter(r => r.type === filterType)
+                : appState.reservations;
+            
+            if (filteredReservations.length === 0) {
+                const emptyMessage = document.createElement('div');
+                emptyMessage.className = 'no-reservations';
+                emptyMessage.textContent = filterType 
+                    ? `No ${filterType} reservations yet`
+                    : 'No reservations yet';
+                existingReservations.appendChild(emptyMessage);
+                return;
+            }
+            
+            // Add title if showing all reservations
+            if (!filterType) {
+                const title = document.createElement('h4');
+                title.style.marginBottom = '15px';
+                title.style.color = 'var(--primary-black)';
+                title.textContent = 'All Reservations';
+                existingReservations.appendChild(title);
+            }
+            
+            // Display reservations
+            filteredReservations.forEach(reservation => {
+                const item = document.createElement('div');
+                item.className = 'reservation-item';
+                
+                let detailsHTML = '';
+                if (reservation.details) {
+                    detailsHTML += `<div class="reservation-details">${reservation.details}</div>`;
+                }
+                if (reservation.address) {
+                    detailsHTML += `<div class="reservation-details">${reservation.address}</div>`;
+                }
+                if (reservation.date) {
+                    detailsHTML += `<div class="reservation-date">Date: ${reservation.date}${reservation.time ? ' at ' + reservation.time : ''}</div>`;
+                }
+                if (reservation.confirmation) {
+                    detailsHTML += `<div class="reservation-date">Confirmation: ${reservation.confirmation}</div>`;
+                }
+                
+                item.innerHTML = `
+                    <div class="reservation-header">
+                        <div class="reservation-name">${reservation.name}</div>
+                        <div class="reservation-type">${reservation.type}</div>
+                    </div>
+                    ${detailsHTML}
+                    <div class="reservation-date" style="margin-top: 8px;">Added: ${reservation.dateAdded}</div>
+                `;
+                
+                existingReservations.appendChild(item);
+            });
+        }
+
+        function updateReservationCategories() {
+            // Count reservations by type
+            const counts = {
+                flights: 0,
+                lodging: 0,
+                car: 0,
+                restaurant: 0,
+                attachment: 0,
+                other: 0
+            };
+            
+            appState.reservations.forEach(reservation => {
+                if (counts[reservation.type] !== undefined) {
+                    counts[reservation.type]++;
+                }
+            });
+            
+            // Update UI
+            document.querySelectorAll('.reservation-category').forEach(category => {
+                const type = category.getAttribute('data-category');
+                const count = counts[type] || 0;
+                const categoryName = category.querySelector('.category-name');
+                
+                // Update text to show count if any
+                if (count > 0) {
+                    const baseName = categoryName.textContent.replace(/ \(\d+\)/, '');
+                    categoryName.textContent = `${baseName} (${count})`;
+                    category.setAttribute('data-active', 'true');
+                    category.classList.add('active');
+                } else {
+                    const baseName = categoryName.textContent.replace(/ \(\d+\)/, '');
+                    categoryName.textContent = baseName;
+                    category.setAttribute('data-active', 'false');
+                    category.classList.remove('active');
+                }
+            });
+        }
+
+        // Reservation type names for display
+        const typeNames = {
+            flights: 'Flight',
+            lodging: 'Lodging',
+            car: 'Rental Car',
+            restaurant: 'Restaurant',
+            attachment: 'Attachment',
+            other: 'Other'
+        };
+
+        // Screen 4: Interactive Map
+        function initFullMap() {
+            if (appState.fullMap) {
+                appState.fullMap.remove();
+            }
+            
+            // Initialize Leaflet map for full screen
+            appState.fullMap = L.map('full-map').setView([36.2048, 138.2529], 6);
+            
+            // Add tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(appState.fullMap);
+            
+            // Add markers for trending places
+            appState.trendingPlaces.forEach(place => {
+                const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
+                const markerColor = isInTrip ? '#28a745' : '#BC002D';
+                
+                const marker = L.marker([place.lat, place.lng], {
+                    icon: L.divIcon({
+                        className: 'custom-marker',
+                        html: `<div class="map-marker" style="background-color: ${markerColor};">
+                                 <div class="marker-label">${place.name}</div>
+                               </div>`,
+                        iconSize: [24, 24],
+                        iconAnchor: [12, 24]
+                    })
+                }).addTo(appState.fullMap);
+                
+                marker.bindPopup(`
+                    <b>${place.name}</b><br>
+                    ${place.address}<br>
+                    <button onclick="window.showPlaceDetailModal(${JSON.stringify(place).replace(/"/g, '&quot;')})" 
+                            style="background: #BC002D; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 5px;">
+                        View Details
+                    </button>
+                `);
+                
+                marker.on('click', () => {
+                    marker.openPopup();
+                });
+            });
+            
+            // Add map controls
+            document.getElementById('locate-btn').addEventListener('click', () => {
+                if (appState.userLocation) {
+                    appState.fullMap.setView([appState.userLocation.lat, appState.userLocation.lng], 12);
+                    showToast('Centered on your location');
+                } else {
+                    showToast('Unable to get your location');
+                }
+            });
+            
+            document.getElementById('zoom-in-btn').addEventListener('click', () => {
+                appState.fullMap.zoomIn();
+            });
+            
+            document.getElementById('zoom-out-btn').addEventListener('click', () => {
+                appState.fullMap.zoomOut();
+            });
+        }
+
+        // Place Detail Modal
+        function showPlaceDetailModal(place) {
+            const modal = document.getElementById('place-detail-modal');
+            const modalTitle = document.getElementById('modal-place-name');
+            const modalDetail = document.getElementById('modal-place-detail');
+            const modalAddBtn = document.getElementById('modal-add-btn');
+            
+            modalTitle.textContent = place.name;
+            
+            const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
+            
+            modalDetail.innerHTML = `
+                <p><strong>Address:</strong> ${place.address}</p>
+                <p><strong>Region:</strong> ${place.region}</p>
+                <p><strong>Category:</strong> ${place.category.charAt(0).toUpperCase() + place.category.slice(1)}</p>
+                <p><strong>Description:</strong> ${place.description}</p>
+            `;
+            
+            modalAddBtn.innerHTML = isInTrip ? 
+                '<i class="fas fa-check"></i> Already in Trip' : 
+                '<i class="fas fa-plus"></i> Add to Trip';
+            modalAddBtn.disabled = isInTrip;
+            modalAddBtn.style.opacity = isInTrip ? '0.7' : '1';
+            
+            modal.style.display = 'flex';
+            
+            // Add event listeners
+            document.getElementById('close-modal').onclick = () => modal.style.display = 'none';
+            document.getElementById('modal-cancel-btn').onclick = () => modal.style.display = 'none';
+            
+            modalAddBtn.onclick = () => {
+                togglePlaceInTrip(place);
+                modal.style.display = 'none';
+            };
+            
+            // Close modal when clicking outside
+            modal.onclick = (e) => {
+                if (e.target === modal) {
+                    modal.style.display = 'none';
+                }
+            };
+        }
+
+        // Make function available globally for popup buttons
+        window.showPlaceDetailModal = showPlaceDetailModal;
+        window.simulateFileUpload = simulateFileUpload;
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
