@@ -614,6 +614,151 @@
             font-size: 16px;
         }
 
+        /* Place Detail Modal */
+        .place-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .place-detail-content {
+            background-color: white;
+            width: 95%;
+            max-width: 450px;
+            border-radius: 12px;
+            padding: 25px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--primary-black);
+            line-height: 1.3;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-light);
+            line-height: 1;
+        }
+
+        .place-detail-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .place-detail-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .section-header {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-header i {
+            font-size: 16px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .info-item {
+            margin-bottom: 10px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: var(--dark-gray);
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            color: var(--primary-black);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .description-text {
+            color: var(--primary-black);
+            line-height: 1.6;
+            font-size: 15px;
+        }
+
+        .tag {
+            display: inline-block;
+            background-color: var(--light-gray);
+            color: var(--primary-black);
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-red);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--light-gray);
+            color: var(--primary-black);
+        }
+
         /* Reservation Modal */
         .reservation-modal {
             display: none;
@@ -821,75 +966,6 @@
             margin-right: 8px;
         }
 
-        .place-detail-modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .place-detail-content {
-            background-color: white;
-            width: 90%;
-            max-width: 400px;
-            border-radius: 12px;
-            padding: 20px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .modal-title {
-            font-size: 20px;
-            font-weight: 600;
-            color: var(--primary-black);
-        }
-
-        .close-modal {
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-
-        .modal-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background-color: var(--primary-red);
-            color: white;
-        }
-
-        .btn-secondary {
-            background-color: var(--light-gray);
-            color: var(--primary-black);
-        }
-
         .toast {
             position: fixed;
             bottom: 80px;
@@ -934,6 +1010,15 @@
             .reservations-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+            
+            .place-detail-content {
+                padding: 20px;
+                width: 92%;
+            }
+            
+            .modal-title {
+                font-size: 20px;
+            }
         }
     </style>
 </head>
@@ -956,12 +1041,14 @@
                     <h3 class="modal-title" id="modal-place-name">Place Name</h3>
                     <button class="close-modal" id="close-modal">&times;</button>
                 </div>
-                <div class="place-detail" id="modal-place-detail">
+                <div id="modal-place-detail">
                     <!-- Place details will be inserted here -->
                 </div>
                 <div class="modal-actions">
-                    <button class="modal-btn btn-secondary" id="modal-cancel-btn">Cancel</button>
-                    <button class="modal-btn btn-primary" id="modal-add-btn">Add to Trip</button>
+                    <button class="modal-btn btn-secondary" id="modal-cancel-btn">Close</button>
+                    <button class="modal-btn btn-primary" id="modal-add-btn">
+                        <i class="fas fa-plus"></i> Add to Trip
+                    </button>
                 </div>
             </div>
         </div>
@@ -1223,64 +1310,184 @@
             trendingPlaces: [
                 { 
                     id: 1, 
-                    name: 'Dotonbori', 
-                    address: '1-7-21 Dotonbori, Chuo-ku, Osaka', 
-                    distance: '3.2 km away', 
-                    icon: 'fas fa-utensils', 
-                    region: 'Osaka',
-                    lat: 34.6697,
-                    lng: 135.5022,
-                    description: 'Famous entertainment district known for its neon lights, extravagant signage, and delicious street food.',
-                    category: 'food'
+                    name: 'Mount Fuji', 
+                    address: 'Kitayama, Fujinomiya, Shizuoka Prefecture', 
+                    distance: '85 km from Tokyo', 
+                    icon: 'fas fa-mountain', 
+                    region: 'Chubu (Central Japan)',
+                    lat: 35.3606,
+                    lng: 138.7274,
+                    description: 'Japan\'s highest mountain and an active volcano, considered sacred and a symbol of Japan. Offers hiking, views, and cultural significance.',
+                    category: 'nature',
+                    overview: 'Mount Fuji is Japan\'s tallest peak at 3,776 meters and an active stratovolcano. It\'s a UNESCO World Heritage site and sacred to both Shinto and Buddhist traditions.',
+                    gettingThere: 'Take the Fuji Excursion limited express train from Shinjuku Station to Kawaguchiko Station (2 hours). Buses also available from Tokyo and major cities.',
+                    practicalInfo: 'Climbing season: July to early September. Yoshida Trail is most popular. Mountain huts available for overnight climbs.',
+                    booking: 'No booking required for climbing, but reserve mountain huts in advance. Guided tours available.',
+                    proTips: 'Start climbing early (before sunrise) for the best views. Check weather conditions as summit can be cloudy.',
+                    categoryDetail: 'Natural Landmark',
+                    bestTime: 'July to September for climbing, clear days for viewing',
+                    visitDuration: 'Full day for climbing, 1-2 hours for viewing from afar',
+                    seasonalHighlights: 'Climbing season: July to early September, best views in winter'
                 },
                 { 
                     id: 2, 
-                    name: 'Senso-ji Temple', 
-                    address: '2-3-1 Asakusa, Taito-ku, Tokyo', 
-                    distance: '1.5 km away', 
-                    icon: 'fas fa-torii-gate', 
-                    region: 'Tokyo',
-                    lat: 35.7148,
-                    lng: 139.7967,
-                    description: 'Tokyo\'s oldest temple, dating back to 645 AD. A must-visit for cultural and historical experiences.',
-                    category: 'temples'
+                    name: 'Tokyo Skytree', 
+                    address: '1-1-2 Oshiage, Sumida-ku, Tokyo', 
+                    distance: '2.5 km from Tokyo Station', 
+                    icon: 'fas fa-tower', 
+                    region: 'Kanto (Tokyo)',
+                    lat: 35.7101,
+                    lng: 139.8107,
+                    description: 'World\'s tallest tower at 634 meters, offering panoramic views of Tokyo from its observation decks.',
+                    category: 'culture',
+                    overview: 'The Tokyo Skytree is a broadcasting, restaurant, and observation tower that opened in 2012. It\'s the tallest structure in Japan and second tallest in the world.',
+                    gettingThere: 'Take the Tokyo Metro Hanzomon Line or Tobu Skytree Line to Tokyo Skytree Station. Direct access from station.',
+                    practicalInfo: 'Open daily 8:00-22:00. Two observation decks: Tembo Deck (350m) and Tembo Galleria (450m).',
+                    booking: 'Tickets available online or on-site. Fast track tickets available for premium access.',
+                    proTips: 'Visit on clear days for best visibility. Evening visits offer beautiful city lights.',
+                    categoryDetail: 'Observation Tower',
+                    bestTime: 'Year-round, clear days for best views',
+                    visitDuration: '2-3 hours',
+                    seasonalHighlights: 'Special illuminations during holidays, clear winter days best for viewing'
                 },
                 { 
                     id: 3, 
                     name: 'Fushimi Inari Shrine', 
-                    address: '68 Fukakusa Yabunouchicho, Kyoto', 
-                    distance: '5.7 km away', 
+                    address: '68 Fukakusa Yabunouchicho, Fushimi-ku, Kyoto', 
+                    distance: '5.7 km from Kyoto Station', 
                     icon: 'fas fa-torii-gate', 
-                    region: 'Kyoto',
+                    region: 'Kansai (Kyoto)',
                     lat: 34.9671,
                     lng: 135.7727,
-                    description: 'Famous for its thousands of vermilion torii gates that lead up Mount Inari.',
-                    category: 'temples'
+                    description: 'Famous for its thousands of vermilion torii gates that lead up Mount Inari, dedicated to the Shinto god of rice.',
+                    category: 'temples',
+                    overview: 'Founded in 711 AD, this important Shinto shrine features thousands of torii gates donated by businesses and individuals.',
+                    gettingThere: 'Take the JR Nara Line from Kyoto Station to Inari Station (5 minutes). The shrine is right outside the station.',
+                    practicalInfo: 'Open 24 hours, free admission. Main trails take 2-3 hours to complete.',
+                    booking: 'No booking required. Free to enter.',
+                    proTips: 'Visit early morning or late afternoon to avoid crowds. Wear comfortable shoes for hiking.',
+                    categoryDetail: 'Shinto Shrine',
+                    bestTime: 'Year-round, but spring and autumn are particularly beautiful',
+                    visitDuration: '2-3 hours for full hike',
+                    seasonalHighlights: 'Cherry blossoms in April, autumn colors in November'
                 },
                 { 
                     id: 4, 
-                    name: 'Mount Fuji', 
-                    address: 'Kitayama, Fujinomiya, Shizuoka', 
-                    distance: '85 km away', 
-                    icon: 'fas fa-mountain', 
-                    region: 'Shizuoka',
-                    lat: 35.3606,
-                    lng: 138.7274,
-                    description: 'Japan\'s highest mountain and an active volcano, also a UNESCO World Heritage site.',
-                    category: 'nature'
+                    name: 'Dotonbori', 
+                    address: '1-chome Dotonbori, Chuo-ku, Osaka', 
+                    distance: '3.2 km from Osaka Station', 
+                    icon: 'fas fa-utensils', 
+                    region: 'Kansai (Osaka)',
+                    lat: 34.6697,
+                    lng: 135.5022,
+                    description: 'Famous entertainment district known for its neon lights, extravagant signage, and delicious street food.',
+                    category: 'food',
+                    overview: 'Osaka\'s premier nightlife and entertainment district, famous for its giant mechanical signs, street food, and vibrant atmosphere.',
+                    gettingThere: 'Take the Midosuji Line to Namba Station, exit 14. The area is pedestrian-friendly.',
+                    practicalInfo: 'Best visited in the evening. Many restaurants open until late.',
+                    booking: 'No booking required for most street food stalls. Some restaurants accept reservations.',
+                    proTips: 'Try takoyaki (octopus balls) and okonomiyaki (savory pancakes). Visit both day and night for different experiences.',
+                    categoryDetail: 'Entertainment District',
+                    bestTime: 'Evening and night time for the best atmosphere',
+                    visitDuration: '2-4 hours',
+                    seasonalHighlights: 'Special festivals and events throughout the year'
+                },
+                { 
+                    id: 5, 
+                    name: 'Himeji Castle', 
+                    address: '68 Honmachi, Himeji, Hyogo Prefecture', 
+                    distance: '55 km from Osaka', 
+                    icon: 'fas fa-chess-rook', 
+                    region: 'Kansai (Hyogo)',
+                    lat: 34.8394,
+                    lng: 134.6939,
+                    description: 'Japan\'s most spectacular castle, known as "White Heron Castle" for its elegant white appearance.',
+                    category: 'culture',
+                    overview: 'A hilltop Japanese castle complex dating from 1333. UNESCO World Heritage site and one of Japan\'s few original castles.',
+                    gettingThere: 'Take the Shinkansen from Osaka or Kyoto to Himeji Station (30-60 minutes), then 15-20 minute walk.',
+                    practicalInfo: 'Open 9:00-17:00 (until 18:00 in summer). Closed December 29-31.',
+                    booking: 'Tickets available on-site. Can get crowded during peak seasons.',
+                    proTips: 'Visit early to avoid crowds. The castle looks spectacular against cherry blossoms in spring.',
+                    categoryDetail: 'Historic Castle',
+                    bestTime: 'Spring for cherry blossoms, autumn for comfortable weather',
+                    visitDuration: '3-4 hours',
+                    seasonalHighlights: 'Cherry blossom season (late March-early April), special night illuminations'
+                },
+                { 
+                    id: 6, 
+                    name: 'Arashiyama Bamboo Grove', 
+                    address: 'Sagatenryuji Susukinobabacho, Ukyo-ku, Kyoto', 
+                    distance: '8 km from Kyoto Station', 
+                    icon: 'fas fa-tree', 
+                    region: 'Kansai (Kyoto)',
+                    lat: 35.0172,
+                    lng: 135.6729,
+                    description: 'Magical pathway through towering bamboo stalks that create a unique sound when the wind blows.',
+                    category: 'nature',
+                    overview: 'One of Kyoto\'s most iconic sights, this bamboo forest path creates an otherworldly atmosphere with sunlight filtering through the dense bamboo.',
+                    gettingThere: 'Take the JR Sagano Line to Saga-Arashiyama Station, then 10-minute walk. Or take Kyoto Bus to Arashiyama.',
+                    practicalInfo: 'Open 24 hours, free admission. Early morning is least crowded.',
+                    booking: 'No booking required. Free to enter.',
+                    proTips: 'Visit at sunrise for the most magical experience with few people. Listen for the bamboo "singing" in the wind.',
+                    categoryDetail: 'Natural Landscape',
+                    bestTime: 'Early morning or late afternoon to avoid crowds',
+                    visitDuration: '1-2 hours',
+                    seasonalHighlights: 'Beautiful year-round, cherry blossoms nearby in spring, autumn colors'
+                },
+                { 
+                    id: 7, 
+                    name: 'Shibuya Crossing', 
+                    address: 'Shibuya, Tokyo', 
+                    distance: '3 km from Tokyo Station', 
+                    icon: 'fas fa-users', 
+                    region: 'Kanto (Tokyo)',
+                    lat: 35.6595,
+                    lng: 139.7004,
+                    description: 'World\'s busiest pedestrian crossing, an iconic symbol of Tokyo\'s energy and density.',
+                    category: 'culture',
+                    overview: 'The famous "scramble crossing" where up to 3,000 people cross simultaneously when traffic stops.',
+                    gettingThere: 'Take JR Yamanote Line, Tokyo Metro, or other lines to Shibuya Station. Exit Hachiko Exit.',
+                    practicalInfo: 'Always accessible. Best viewing from Starbucks Tsutaya or Shibuya Sky observation deck.',
+                    booking: 'No booking required. Free to experience.',
+                    proTips: 'Experience it from ground level, then view from above. Visit at different times of day for different atmospheres.',
+                    categoryDetail: 'Urban Landmark',
+                    bestTime: 'Evening for the full neon light experience',
+                    visitDuration: '30 minutes to 1 hour',
+                    seasonalHighlights: 'Special Christmas and New Year illuminations'
+                },
+                { 
+                    id: 8, 
+                    name: 'Itsukushima Shrine', 
+                    address: '1-1 Miyajimacho, Hatsukaichi, Hiroshima Prefecture', 
+                    distance: '20 km from Hiroshima', 
+                    icon: 'fas fa-water', 
+                    region: 'Chugoku (Hiroshima)',
+                    lat: 34.2958,
+                    lng: 132.3219,
+                    description: 'Famous "floating" torii gate that appears to float on water during high tide.',
+                    category: 'temples',
+                    overview: 'A Shinto shrine on Miyajima Island, UNESCO World Heritage site known for its dramatic gate that appears to float at high tide.',
+                    gettingThere: 'From Hiroshima, take train or tram to Miyajimaguchi, then ferry to Miyajima Island.',
+                    practicalInfo: 'Shrine open 6:30-18:00 (varies by season). Check tide schedules for floating gate view.',
+                    booking: 'No booking required for shrine. Ferries run regularly.',
+                    proTips: 'Visit during high tide for floating gate, low tide to walk out to gate. Stay overnight to experience island after day-trippers leave.',
+                    categoryDetail: 'Shinto Shrine',
+                    bestTime: 'Year-round, check tide schedules',
+                    visitDuration: 'Half day to full day',
+                    seasonalHighlights: 'Autumn colors, summer fireworks, cherry blossoms in spring'
                 }
             ],
             searchLocations: [
                 { id: 1, name: 'Use current location', icon: 'fas fa-location-arrow', lat: null, lng: null },
-                { id: 2, name: 'Kanazawa', icon: 'fas fa-map-marker-alt', lat: 36.5613, lng: 136.6562 },
-                { id: 3, name: 'Tokyo', icon: 'fas fa-map-marker-alt', lat: 35.6762, lng: 139.6503 },
-                { id: 4, name: 'Yakushima Island', icon: 'fas fa-map-marker-alt', lat: 30.3589, lng: 130.5297 },
-                { id: 5, name: 'Kamakura', icon: 'fas fa-map-marker-alt', lat: 35.3192, lng: 139.5467 },
-                { id: 6, name: 'Osaka', icon: 'fas fa-map-marker-alt', lat: 34.6937, lng: 135.5023 },
-                { id: 7, name: 'Kyoto', icon: 'fas fa-map-marker-alt', lat: 35.0116, lng: 135.7681 },
-                { id: 8, name: 'Hiroshima', icon: 'fas fa-map-marker-alt', lat: 34.3853, lng: 132.4553 },
-                { id: 9, name: 'Nara', icon: 'fas fa-map-marker-alt', lat: 34.6851, lng: 135.8048 },
-                { id: 10, name: 'Sapporo', icon: 'fas fa-map-marker-alt', lat: 43.0618, lng: 141.3545 }
+                { id: 2, name: 'Tokyo', icon: 'fas fa-map-marker-alt', lat: 35.6762, lng: 139.6503 },
+                { id: 3, name: 'Kyoto', icon: 'fas fa-map-marker-alt', lat: 35.0116, lng: 135.7681 },
+                { id: 4, name: 'Osaka', icon: 'fas fa-map-marker-alt', lat: 34.6937, lng: 135.5023 },
+                { id: 5, name: 'Hiroshima', icon: 'fas fa-map-marker-alt', lat: 34.3853, lng: 132.4553 },
+                { id: 6, name: 'Sapporo', icon: 'fas fa-map-marker-alt', lat: 43.0618, lng: 141.3545 },
+                { id: 7, name: 'Fukuoka', icon: 'fas fa-map-marker-alt', lat: 33.5904, lng: 130.4017 },
+                { id: 8, name: 'Nara', icon: 'fas fa-map-marker-alt', lat: 34.6851, lng: 135.8048 },
+                { id: 9, name: 'Nagoya', icon: 'fas fa-map-marker-alt', lat: 35.1815, lng: 136.9066 },
+                { id: 10, name: 'Sendai', icon: 'fas fa-map-marker-alt', lat: 38.2682, lng: 140.8694 }
             ]
         };
 
@@ -1485,10 +1692,6 @@
                     showPlaceDetailModal(place);
                 });
             });
-setTimeout(() => {
-    appState.homeMap.invalidateSize();
-}, 0);
-
         }
 
         function renderTrendingPlaces() {
@@ -2244,7 +2447,7 @@ setTimeout(() => {
                 maxZoom: 18
             }).addTo(appState.fullMap);
             
-            // Add markers for trending places
+            // Add markers for all places
             appState.trendingPlaces.forEach(place => {
                 const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
                 const markerColor = isInTrip ? '#28a745' : '#BC002D';
@@ -2262,9 +2465,10 @@ setTimeout(() => {
                 
                 marker.bindPopup(`
                     <b>${place.name}</b><br>
+                    <small>${place.categoryDetail || place.category}</small><br>
                     ${place.address}<br>
                     <button onclick="window.showPlaceDetailModal(${JSON.stringify(place).replace(/"/g, '&quot;')})" 
-                            style="background: #BC002D; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; margin-top: 5px;">
+                            style="background: #BC002D; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 14px;">
                         View Details
                     </button>
                 `);
@@ -2293,7 +2497,7 @@ setTimeout(() => {
             });
         }
 
-        // Place Detail Modal
+        // Place Detail Modal with detailed information
         function showPlaceDetailModal(place) {
             const modal = document.getElementById('place-detail-modal');
             const modalTitle = document.getElementById('modal-place-name');
@@ -2304,12 +2508,81 @@ setTimeout(() => {
             
             const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
             
-            modalDetail.innerHTML = `
-                <p><strong>Address:</strong> ${place.address}</p>
-                <p><strong>Region:</strong> ${place.region}</p>
-                <p><strong>Category:</strong> ${place.category.charAt(0).toUpperCase() + place.category.slice(1)}</p>
-                <p><strong>Description:</strong> ${place.description}</p>
+            // Build detailed content
+            let detailHTML = `
+                <div class="place-detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Overview</span>
+                    </div>
+                    <div class="description-text">${place.overview || place.description}</div>
+                </div>
+                
+                <div class="place-detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-train"></i>
+                        <span>Getting There</span>
+                    </div>
+                    <div class="description-text">${place.gettingThere || 'Information not available'}</div>
+                </div>
+                
+                <div class="place-detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-info-circle"></i>
+                        <span>Practical Info</span>
+                    </div>
+                    <div class="description-text">${place.practicalInfo || 'Information not available'}</div>
+                </div>
+                
+                <div class="place-detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Booking</span>
+                    </div>
+                    <div class="description-text">${place.booking || 'Information not available'}</div>
+                </div>
+                
+                <div class="place-detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-lightbulb"></i>
+                        <span>Pro Tips</span>
+                    </div>
+                    <div class="description-text">${place.proTips || 'Information not available'}</div>
+                </div>
+                
+                <div class="place-detail-section">
+                    <div class="section-header">
+                        <i class="fas fa-tags"></i>
+                        <span>Details</span>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Category:</div>
+                            <div class="info-value">${place.categoryDetail || place.category}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Region:</div>
+                            <div class="info-value">${place.region}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Best Time to Visit:</div>
+                            <div class="info-value">${place.bestTime || 'Year-round'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Visit Duration:</div>
+                            <div class="info-value">${place.visitDuration || '2-3 hours'}</div>
+                        </div>
+                    </div>
+                    ${place.seasonalHighlights ? `
+                        <div class="info-item" style="margin-top: 15px;">
+                            <div class="info-label">Seasonal Highlights:</div>
+                            <div class="info-value">${place.seasonalHighlights}</div>
+                        </div>
+                    ` : ''}
+                </div>
             `;
+            
+            modalDetail.innerHTML = detailHTML;
             
             modalAddBtn.innerHTML = isInTrip ? 
                 '<i class="fas fa-check"></i> Already in Trip' : 
