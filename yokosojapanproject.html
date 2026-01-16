@@ -612,6 +612,11 @@
             color: var(--text-light);
             cursor: pointer;
             font-size: 16px;
+            transition: color 0.2s;
+        }
+
+        .remove-place-btn:hover {
+            color: var(--primary-red);
         }
 
         /* Place Detail Modal */
@@ -659,6 +664,15 @@
             cursor: pointer;
             color: var(--text-light);
             line-height: 1;
+        }
+
+        .place-image {
+            width: 100%;
+            height: 180px;
+            border-radius: 10px;
+            object-fit: cover;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow);
         }
 
         .place-detail-section {
@@ -858,6 +872,7 @@
             padding: 15px;
             margin-bottom: 10px;
             border-left: 4px solid var(--primary-red);
+            position: relative;
         }
 
         .reservation-header {
@@ -870,6 +885,7 @@
         .reservation-name {
             font-weight: 600;
             color: var(--primary-black);
+            max-width: 70%;
         }
 
         .reservation-type {
@@ -884,11 +900,29 @@
             font-size: 14px;
             color: var(--dark-gray);
             margin-bottom: 5px;
+            max-width: 85%;
         }
 
         .reservation-date {
             font-size: 12px;
             color: var(--text-light);
+        }
+
+        .remove-reservation-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .remove-reservation-btn:hover {
+            color: var(--primary-red);
         }
 
         .no-reservations {
@@ -982,6 +1016,58 @@
             text-align: center;
         }
 
+        /* Map Marker with Image */
+        .custom-marker {
+            background: none !important;
+            border: none !important;
+        }
+
+        .image-marker {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+            position: relative;
+        }
+
+        .image-marker:hover {
+            transform: scale(1.1);
+            transition: transform 0.2s;
+        }
+
+        .image-marker.in-trip {
+            border-color: #28a745;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: var(--text-light);
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--light-gray);
+            border-top: 4px solid var(--primary-red);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Responsive adjustments */
         @media (max-width: 500px) {
             .app-title {
@@ -1019,6 +1105,15 @@
             .modal-title {
                 font-size: 20px;
             }
+            
+            .place-image {
+                height: 150px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -1041,6 +1136,7 @@
                     <h3 class="modal-title" id="modal-place-name">Place Name</h3>
                     <button class="close-modal" id="close-modal">&times;</button>
                 </div>
+                <img class="place-image" id="modal-place-image" src="" alt="Place image">
                 <div id="modal-place-detail">
                     <!-- Place details will be inserted here -->
                 </div>
@@ -1080,7 +1176,13 @@
                 <div class="home-content">
                     <!-- Japan Map Section -->
                     <div class="japan-map-container">
-                        <div id="interactive-japan-map"></div>
+                        <div id="interactive-japan-map">
+                            <!-- Loading spinner for map -->
+                            <div class="loading-spinner" id="map-loading">
+                                <div class="spinner"></div>
+                                <div>Loading map...</div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="home-sections">
@@ -1240,7 +1342,13 @@
             <!-- Screen 4: Interactive Map -->
             <div class="screen" id="map-screen">
                 <div class="map-container">
-                    <div id="full-map"></div>
+                    <div id="full-map">
+                        <!-- Loading spinner for map -->
+                        <div class="loading-spinner" id="full-map-loading">
+                            <div class="spinner"></div>
+                            <div>Loading map...</div>
+                        </div>
+                    </div>
                     <div class="map-controls">
                         <button class="map-control-btn" id="locate-btn" title="Locate me">
                             <i class="fas fa-location-arrow"></i>
@@ -1307,6 +1415,8 @@
             fullMap: null,
             reservations: JSON.parse(localStorage.getItem('reservations')) || [],
             currentReservationType: null,
+            mapInitialized: false,
+            fullMapInitialized: false,
             trendingPlaces: [
                 { 
                     id: 1, 
@@ -1317,6 +1427,7 @@
                     region: 'Chubu (Central Japan)',
                     lat: 35.3606,
                     lng: 138.7274,
+                    image: 'https://images.unsplash.com/photo-1578637387939-43c525550085?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'Japan\'s highest mountain and an active volcano, considered sacred and a symbol of Japan. Offers hiking, views, and cultural significance.',
                     category: 'nature',
                     overview: 'Mount Fuji is Japan\'s tallest peak at 3,776 meters and an active stratovolcano. It\'s a UNESCO World Heritage site and sacred to both Shinto and Buddhist traditions.',
@@ -1338,6 +1449,7 @@
                     region: 'Kanto (Tokyo)',
                     lat: 35.7101,
                     lng: 139.8107,
+                    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'World\'s tallest tower at 634 meters, offering panoramic views of Tokyo from its observation decks.',
                     category: 'culture',
                     overview: 'The Tokyo Skytree is a broadcasting, restaurant, and observation tower that opened in 2012. It\'s the tallest structure in Japan and second tallest in the world.',
@@ -1359,6 +1471,7 @@
                     region: 'Kansai (Kyoto)',
                     lat: 34.9671,
                     lng: 135.7727,
+                    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'Famous for its thousands of vermilion torii gates that lead up Mount Inari, dedicated to the Shinto god of rice.',
                     category: 'temples',
                     overview: 'Founded in 711 AD, this important Shinto shrine features thousands of torii gates donated by businesses and individuals.',
@@ -1380,6 +1493,7 @@
                     region: 'Kansai (Osaka)',
                     lat: 34.6697,
                     lng: 135.5022,
+                    image: 'https://images.unsplash.com/photo-1554734867-bf3c00a49371?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'Famous entertainment district known for its neon lights, extravagant signage, and delicious street food.',
                     category: 'food',
                     overview: 'Osaka\'s premier nightlife and entertainment district, famous for its giant mechanical signs, street food, and vibrant atmosphere.',
@@ -1401,6 +1515,7 @@
                     region: 'Kansai (Hyogo)',
                     lat: 34.8394,
                     lng: 134.6939,
+                    image: 'https://images.unsplash.com/photo-1528164344705-47542687000d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'Japan\'s most spectacular castle, known as "White Heron Castle" for its elegant white appearance.',
                     category: 'culture',
                     overview: 'A hilltop Japanese castle complex dating from 1333. UNESCO World Heritage site and one of Japan\'s few original castles.',
@@ -1422,6 +1537,7 @@
                     region: 'Kansai (Kyoto)',
                     lat: 35.0172,
                     lng: 135.6729,
+                    image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'Magical pathway through towering bamboo stalks that create a unique sound when the wind blows.',
                     category: 'nature',
                     overview: 'One of Kyoto\'s most iconic sights, this bamboo forest path creates an otherworldly atmosphere with sunlight filtering through the dense bamboo.',
@@ -1443,6 +1559,7 @@
                     region: 'Kanto (Tokyo)',
                     lat: 35.6595,
                     lng: 139.7004,
+                    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'World\'s busiest pedestrian crossing, an iconic symbol of Tokyo\'s energy and density.',
                     category: 'culture',
                     overview: 'The famous "scramble crossing" where up to 3,000 people cross simultaneously when traffic stops.',
@@ -1464,6 +1581,7 @@
                     region: 'Chugoku (Hiroshima)',
                     lat: 34.2958,
                     lng: 132.3219,
+                    image: 'https://images.unsplash.com/photo-1528164344705-47542687000d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=800&q=80',
                     description: 'Famous "floating" torii gate that appears to float on water during high tide.',
                     category: 'temples',
                     overview: 'A Shinto shrine on Miyajima Island, UNESCO World Heritage site known for its dramatic gate that appears to float at high tide.',
@@ -1509,6 +1627,8 @@
         const reservationFormContent = document.getElementById('reservation-form-content');
         const reservationModalTitle = document.getElementById('reservation-modal-title');
         const existingReservations = document.getElementById('existing-reservations');
+        const mapLoading = document.getElementById('map-loading');
+        const fullMapLoading = document.getElementById('full-map-loading');
 
         // Initialize the app
         function initApp() {
@@ -1519,7 +1639,6 @@
             initHomeScreen();
             initSearchScreen();
             initTripScreen();
-            initMapScreen();
             
             // Show the home screen by default
             switchScreen('home');
@@ -1532,6 +1651,11 @@
             
             // Load saved reservations
             renderExistingReservations();
+            
+            // Initialize home map immediately
+            setTimeout(() => {
+                initHomeMap();
+            }, 100);
         }
 
         // Show toast message
@@ -1593,7 +1717,9 @@
             // Screen-specific initialization
             if (screenName === 'home') {
                 renderTrendingPlaces();
-                initHomeMap();
+                if (!appState.mapInitialized) {
+                    initHomeMap();
+                }
             } else if (screenName === 'search') {
                 renderLocationList();
                 document.getElementById('search-input').focus();
@@ -1601,7 +1727,9 @@
                 renderTripPlaces();
                 updateReservationCategories();
             } else if (screenName === 'map') {
-                initFullMap();
+                if (!appState.fullMapInitialized) {
+                    initFullMap();
+                }
             }
         }
 
@@ -1651,8 +1779,13 @@
 
         function initHomeMap() {
             if (appState.homeMap) {
-                appState.homeMap.remove();
+                return; // Already initialized
             }
+            
+            // Hide loading spinner after a short delay
+            setTimeout(() => {
+                if (mapLoading) mapLoading.style.display = 'none';
+            }, 500);
             
             // Initialize Leaflet map for home screen
             appState.homeMap = L.map('interactive-japan-map').setView([36.2048, 138.2529], 5);
@@ -1672,19 +1805,19 @@
             appState.homeMap.boxZoom.disable();
             appState.homeMap.keyboard.disable();
             
-            // Add markers for trending places
+            // Add custom image markers for trending places
             appState.trendingPlaces.forEach(place => {
                 const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
-                const markerColor = isInTrip ? '#28a745' : '#BC002D';
+                const markerClass = isInTrip ? 'image-marker in-trip' : 'image-marker';
                 
                 const marker = L.marker([place.lat, place.lng], {
                     icon: L.divIcon({
                         className: 'custom-marker',
-                        html: `<div class="map-marker" style="background-color: ${markerColor};">
+                        html: `<div class="${markerClass}" style="background-image: url('${place.image}');">
                                  <div class="marker-label">${place.name}</div>
                                </div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 24]
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40]
                     })
                 }).addTo(appState.homeMap);
                 
@@ -1692,6 +1825,8 @@
                     showPlaceDetailModal(place);
                 });
             });
+            
+            appState.mapInitialized = true;
         }
 
         function renderTrendingPlaces() {
@@ -2352,8 +2487,8 @@
                 existingReservations.appendChild(title);
             }
             
-            // Display reservations
-            filteredReservations.forEach(reservation => {
+            // Display reservations with remove buttons
+            filteredReservations.forEach((reservation, index) => {
                 const item = document.createElement('div');
                 item.className = 'reservation-item';
                 
@@ -2378,10 +2513,37 @@
                     </div>
                     ${detailsHTML}
                     <div class="reservation-date" style="margin-top: 8px;">Added: ${reservation.dateAdded}</div>
+                    <button class="remove-reservation-btn" data-index="${index}" title="Remove reservation">
+                        <i class="fas fa-times"></i>
+                    </button>
                 `;
                 
                 existingReservations.appendChild(item);
             });
+            
+            // Add event listeners to remove reservation buttons
+            document.querySelectorAll('.remove-reservation-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const index = parseInt(this.getAttribute('data-index'));
+                    removeReservation(index);
+                });
+            });
+        }
+
+        function removeReservation(index) {
+            if (index >= 0 && index < appState.reservations.length) {
+                const reservation = appState.reservations[index];
+                appState.reservations.splice(index, 1);
+                
+                // Save to localStorage
+                localStorage.setItem('reservations', JSON.stringify(appState.reservations));
+                
+                // Refresh displays
+                renderExistingReservations(appState.currentReservationType);
+                updateReservationCategories();
+                showToast(`Removed ${reservation.name} reservation`);
+            }
         }
 
         function updateReservationCategories() {
@@ -2435,8 +2597,13 @@
         // Screen 4: Interactive Map
         function initFullMap() {
             if (appState.fullMap) {
-                appState.fullMap.remove();
+                return; // Already initialized
             }
+            
+            // Hide loading spinner after a short delay
+            setTimeout(() => {
+                if (fullMapLoading) fullMapLoading.style.display = 'none';
+            }, 500);
             
             // Initialize Leaflet map for full screen
             appState.fullMap = L.map('full-map').setView([36.2048, 138.2529], 6);
@@ -2447,30 +2614,32 @@
                 maxZoom: 18
             }).addTo(appState.fullMap);
             
-            // Add markers for all places
+            // Add custom image markers for all places
             appState.trendingPlaces.forEach(place => {
                 const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
-                const markerColor = isInTrip ? '#28a745' : '#BC002D';
+                const markerClass = isInTrip ? 'image-marker in-trip' : 'image-marker';
                 
                 const marker = L.marker([place.lat, place.lng], {
                     icon: L.divIcon({
                         className: 'custom-marker',
-                        html: `<div class="map-marker" style="background-color: ${markerColor};">
+                        html: `<div class="${markerClass}" style="background-image: url('${place.image}');">
                                  <div class="marker-label">${place.name}</div>
                                </div>`,
-                        iconSize: [24, 24],
-                        iconAnchor: [12, 24]
+                        iconSize: [40, 40],
+                        iconAnchor: [20, 40]
                     })
                 }).addTo(appState.fullMap);
                 
                 marker.bindPopup(`
-                    <b>${place.name}</b><br>
-                    <small>${place.categoryDetail || place.category}</small><br>
-                    ${place.address}<br>
-                    <button onclick="window.showPlaceDetailModal(${JSON.stringify(place).replace(/"/g, '&quot;')})" 
-                            style="background: #BC002D; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 14px;">
-                        View Details
-                    </button>
+                    <div style="text-align: center;">
+                        <img src="${place.image}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;">
+                        <b>${place.name}</b><br>
+                        <small>${place.categoryDetail || place.category}</small><br>
+                        <button onclick="window.showPlaceDetailModal(${JSON.stringify(place).replace(/"/g, '&quot;')})" 
+                                style="background: #BC002D; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-top: 8px; font-size: 14px;">
+                            View Details
+                        </button>
+                    </div>
                 `);
                 
                 marker.on('click', () => {
@@ -2495,16 +2664,21 @@
             document.getElementById('zoom-out-btn').addEventListener('click', () => {
                 appState.fullMap.zoomOut();
             });
+            
+            appState.fullMapInitialized = true;
         }
 
-        // Place Detail Modal with detailed information
+        // Place Detail Modal with detailed information and image
         function showPlaceDetailModal(place) {
             const modal = document.getElementById('place-detail-modal');
             const modalTitle = document.getElementById('modal-place-name');
+            const modalImage = document.getElementById('modal-place-image');
             const modalDetail = document.getElementById('modal-place-detail');
             const modalAddBtn = document.getElementById('modal-add-btn');
             
             modalTitle.textContent = place.name;
+            modalImage.src = place.image;
+            modalImage.alt = place.name;
             
             const isInTrip = appState.tripPlaces.some(p => p.id === place.id);
             
